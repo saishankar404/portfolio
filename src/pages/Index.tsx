@@ -82,7 +82,7 @@ const Index = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.25 }}
       >
         {/* Personal Intro */}
         <header className="mb-12 flex items-start justify-between">
@@ -90,7 +90,7 @@ const Index = () => {
             className="text-2xl font-semibold tracking-tight mb-6"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+            transition={{ duration: 0.25, delay: 0.1 }}
           >
             hello! i'm sai
           </motion.h1>
@@ -99,7 +99,7 @@ const Index = () => {
             className="text-muted-foreground hover:text-foreground transition-colors p-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.15 }}
+            transition={{ duration: 0.2, delay: 0.15 }}
             aria-label={soundEnabled ? "Mute sounds" : "Enable sounds"}
           >
             {soundEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
@@ -110,7 +110,7 @@ const Index = () => {
           className="space-y-4 text-base text-foreground leading-relaxed"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.25, delay: 0.2 }}
         >
           <p>
             i study computer science and spend a lot of my time designing and building things on the web.
@@ -144,7 +144,7 @@ const Index = () => {
           className="border-t border-border my-8"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
-          transition={{ duration: 0.6, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ duration: 0.3, delay: 0.3, ease: "easeOut" }}
           style={{ originX: 0 }}
         />
 
@@ -153,7 +153,7 @@ const Index = () => {
           className="mb-6"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.32 }}
+          transition={{ duration: 0.25, delay: 0.32 }}
         >
           <Link 
             to="/projects" 
@@ -168,25 +168,45 @@ const Index = () => {
           className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.34 }}
+          transition={{ duration: 0.25, delay: 0.34 }}
         >
-          {projects.map((project) => (
-            <Link
-              key={project.slug}
-              to={`/projects`}
-              className="project-card group relative block p-4 rounded-xl border border-border/50 hover:border-border hover:bg-secondary/20 transition-all duration-300"
-            >
-              <div className="aspect-[4/3] rounded-lg overflow-hidden mb-3 bg-secondary/30">
-                <img 
-                  src={project.image} 
-                  alt={project.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-              <h3 className="text-sm font-medium tracking-tight text-foreground capitalize">{project.title}</h3>
-              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{project.description}</p>
-            </Link>
-          ))}
+          {projects.map((project) => {
+            return project.external ? (
+              <a
+                key={project.slug}
+                href={project.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="project-card group relative block p-4 rounded-xl border border-border/50 hover:border-border hover:bg-secondary/20 transition-all duration-200 active:scale-[0.98]"
+              >
+                <div className="aspect-[4/3] rounded-lg overflow-hidden mb-3 bg-secondary/30">
+                  <img 
+                    src={project.image} 
+                    alt={project.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <h3 className="text-sm font-medium tracking-tight text-foreground capitalize">{project.title}</h3>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{project.description}</p>
+              </a>
+            ) : (
+              <Link
+                key={project.slug}
+                to={`/projects/${project.slug}`}
+                className="project-card group relative block p-4 rounded-xl border border-border/50 hover:border-border hover:bg-secondary/20 transition-all duration-200 active:scale-[0.98]"
+              >
+                <div className="aspect-[4/3] rounded-lg overflow-hidden mb-3 bg-secondary/30">
+                  <img 
+                    src={project.image} 
+                    alt={project.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <h3 className="text-sm font-medium tracking-tight text-foreground capitalize">{project.title}</h3>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{project.description}</p>
+              </Link>
+            );
+          })}
         </motion.div>
 
         {/* Writings Header */}
@@ -194,7 +214,7 @@ const Index = () => {
           className="mb-6"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.35 }}
+          transition={{ duration: 0.25, delay: 0.35 }}
         >
           <h2 
             className="text-lg font-medium tracking-tight text-foreground underline decoration-dotted underline-offset-4 cursor-pointer"

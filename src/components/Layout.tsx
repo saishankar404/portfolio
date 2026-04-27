@@ -24,7 +24,8 @@ export function Layout({ children, maxWidth = "max-w-2xl" }: LayoutProps) {
   const handleClick = useCallback((e: MouseEvent) => {
     const target = e.target as HTMLElement;
     const isInteractive = target.closest('a, button, [role="button"], input[type="checkbox"], input[type="radio"]');
-    if (isInteractive && audioEngine.isEnabled()) {
+    const isKeyboardTrigger = e.detail === 0;
+    if (isInteractive && audioEngine.isEnabled() && !isKeyboardTrigger) {
       audioEngine.playSound("click");
     }
   }, []);
@@ -60,7 +61,7 @@ export function Layout({ children, maxWidth = "max-w-2xl" }: LayoutProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.15 }}
             className="fixed inset-0 z-40 bg-background/95 backdrop-blur-sm lg:hidden"
             onClick={() => setMobileMenuOpen(false)}
           >

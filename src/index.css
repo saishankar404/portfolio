@@ -98,6 +98,8 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -109,7 +111,7 @@
 
   /* Dotted underline link style */
   .dotted-link {
-    @apply relative inline-block;
+    @apply relative inline-block text-underline-offset-2;
   }
 
   .dotted-link::after {
@@ -121,6 +123,24 @@
 
   .dotted-link:hover::after {
     opacity: 1;
+  }
+
+  /* Proper text wrap */
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Text underline offset for descenders */
+  .text-underline-offset-2 {
+    text-underline-offset: 2px;
+  }
+
+  .text-underline-offset-4 {
+    text-underline-offset: 4px;
   }
 
   /* Fade in animation */
@@ -149,11 +169,15 @@
 
   /* Hover scale */
   .hover-lift {
-    @apply transition-all duration-300 ease-out;
+    @apply transition-all duration-200 ease-out;
   }
 
   .hover-lift:hover {
     @apply -translate-y-0.5;
+  }
+
+  .hover-lift:active {
+    @apply scale-[0.98];
   }
 
   /* Row hover effect */

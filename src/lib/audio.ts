@@ -43,6 +43,14 @@ class AudioEngine {
   constructor() {
     if (typeof window !== "undefined") {
       this.context = new (window.AudioContext || (window as any).webkitAudioContext)();
+      this.checkReducedMotion();
+    }
+  }
+
+  private checkReducedMotion() {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) {
+      this.enabled = false;
     }
   }
 

@@ -65,7 +65,6 @@ export function BlogPostList({ posts }: BlogPostListProps) {
               type: "spring",
               stiffness: 500,
               damping: 35,
-              opacity: { duration: 0.15 }
             }}
             style={{ 
               left: "-0.75rem", 
