@@ -38,28 +38,37 @@ export function TableOfContents({ content }: TableOfContentsProps) {
 
   // Track scroll position to highlight active section and calculate progress
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
-            // Calculate progress based on which heading is active
-            const index = headings.findIndex(h => h.id === entry.target.id);
-            if (index !== -1) {
-              setScrollProgress((index + 1) / headings.length);
-            }
-          }
-        });
-      },
-      { rootMargin: "-20% 0% -60% 0%" }
-    );
+    // Calculate actual scroll progress and active heading
+    const handleScroll = () => {
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight - windowHeight;
+      const scrollTop = window.scrollY;
+      
+      if (documentHeight > 0) {
+        const progress = Math.min(scrollTop / documentHeight, 1);
+        setScrollProgress(progress);
+      }
 
-    headings.forEach(({ id }) => {
-      const element = document.getElementById(id);
-      if (element) observer.observe(element);
-    });
+      // Find the active heading based on scroll position
+      const headingsWithPosition = headings.map(h => {
+        const el = document.getElementById(h.id);
+        if (!el) return { ...h, top: Infinity };
+        const rect = el.getBoundingClientRect();
+        return { ...h, top: rect.top };
+      });
 
-    return () => observer.disconnect();
+      const activeHeading = headingsWithPosition.find(h => h.top > 100) || headingsWithPosition[headingsWithPosition.length - 1];
+      if (activeHeading) {
+        setActiveId(activeHeading.id);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, [headings]);
 
   if (headings.length === 0) return null;
@@ -159,7 +168,7 @@ export function TableOfContents({ content }: TableOfContentsProps) {
                   ${heading.level === 3 ? "pl-3" : ""}
                   ${activeId === heading.id 
                     ? "text-foreground font-medium" 
-                    : "text-muted-foreground hover:text-foreground"
+                    : "text-muted-foreground hover:text-primary"
                   }
                 `}
               >

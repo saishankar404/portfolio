@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Search, Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { audioEngine } from "@/lib/audio";
 
 const navItems = [
   { label: "Home", path: "/" },
@@ -13,11 +14,25 @@ const navItems = [
 
 interface LayoutProps {
   children: React.ReactNode;
+  maxWidth?: string;
 }
 
-export function Layout({ children }: LayoutProps) {
+export function Layout({ children, maxWidth = "max-w-2xl" }: LayoutProps) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleClick = useCallback((e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const isInteractive = target.closest('a, button, [role="button"], input[type="checkbox"], input[type="radio"]');
+    if (isInteractive && audioEngine.isEnabled()) {
+      audioEngine.playSound("click");
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("click", handleClick, true);
+    return () => document.removeEventListener("click", handleClick, true);
+  }, [handleClick]);
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -134,7 +149,7 @@ export function Layout({ children }: LayoutProps) {
 
       {/* Main Content */}
       <main className="flex-1 lg:ml-48">
-        <div className="max-w-2xl mx-auto px-5 sm:px-8 py-8 pt-20 lg:pt-16 lg:py-16">
+        <div className={cn(maxWidth, "mx-auto px-5 sm:px-8 py-8 pt-20 lg:pt-16 lg:py-16")}>
           {children}
         </div>
       </main>

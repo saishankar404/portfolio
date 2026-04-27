@@ -1,90 +1,159 @@
 import { Layout } from "@/components/Layout";
+import { useState } from "react";
+import { audioEngine } from "@/lib/audio";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
+import { getAllProjects } from "@/lib/projects";
 
-interface Project {
-  title: string;
-  description: string;
-  tags: string[];
-  link?: string;
-  github?: string;
-}
-
-const projects: Project[] = [
-  {
-    title: "Design System Kit",
-    description: "A comprehensive design system with components, tokens, and documentation.",
-    tags: ["Design", "React", "Storybook"],
-    link: "https://example.com",
-    github: "https://github.com",
-  },
-  {
-    title: "Markdown Notes",
-    description: "A minimal note-taking app with local-first sync and bidirectional linking.",
-    tags: ["React", "TypeScript", "SQLite"],
-    github: "https://github.com",
-  },
-  {
-    title: "Focus Timer",
-    description: "A distraction-free pomodoro timer with ambient sounds.",
-    tags: ["iOS", "Swift", "Design"],
-    link: "https://example.com",
-  },
-  {
-    title: "Color Palette Generator",
-    description: "Generate accessible color palettes with automatic contrast checking.",
-    tags: ["Design", "JavaScript"],
-    link: "https://example.com",
-    github: "https://github.com",
-  },
-];
+const filters = ["design", "product", "experiential"];
 
 const Projects = () => {
-  return (
-    <Layout>
-      <div className="animate-fade-in">
-        {/* Header */}
-        <header className="text-center mb-12">
-          <div className="inline-block mb-4 text-3xl">🛠️</div>
-          <h1 className="text-xl font-medium tracking-tight mb-3">
-            Experiments
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Things I've built, designed, or contributed to.
-          </p>
-        </header>
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const allProjects = getAllProjects();
+  const orderedSlugs = ["kumo", "geksu", "align", "dhar", "kalakoi", "root"];
+  const projects = [
+    ...allProjects.filter(p => orderedSlugs.includes(p.slug)).sort((a, b) => orderedSlugs.indexOf(a.slug) - orderedSlugs.indexOf(b.slug)),
+    ...allProjects.filter(p => !orderedSlugs.includes(p.slug))
+  ];
 
-        {/* Projects Section */}
-        <section className="relative">
-          {/* Skeleton placeholder rows */}
-          <div className="space-y-3">
-            {[1, 2, 3, 4].map((i) => (
-              <div 
-                key={i} 
-                className="flex gap-4 py-4 px-4 -mx-4 rounded-[14px] transition-all duration-300 hover:bg-secondary/30 hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)] cursor-default group"
+  return (
+    <Layout maxWidth="max-w-5xl">
+      <div className="animate-fade-in w-full mx-auto">
+        {/* Header */}
+        <header className="mb-12">
+          <h1 className="text-2xl font-semibold tracking-tight mb-8 text-foreground">
+            experiments
+          </h1>
+          
+          {/* Filters */}
+          <div className="flex flex-wrap gap-2">
+            {filters.map((filter) => (
+              <button 
+                key={filter}
+                className="px-4 py-1.5 rounded-full border border-border text-xs text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
               >
-                <div className="w-5 h-4 bg-secondary/60 rounded group-hover:bg-secondary/80 transition-colors" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-secondary/60 rounded w-3/4 group-hover:bg-secondary/80 transition-colors" />
-                  <div className="h-3 bg-secondary/40 rounded w-1/2 group-hover:bg-secondary/60 transition-colors" />
-                  <div className="flex gap-1 mt-2">
-                    <div className="h-4 w-12 bg-secondary/50 rounded group-hover:bg-secondary/70 transition-colors" />
-                    <div className="h-4 w-16 bg-secondary/50 rounded group-hover:bg-secondary/70 transition-colors" />
-                  </div>
-                </div>
-                <div className="flex gap-1">
-                  <div className="h-6 w-6 bg-secondary/40 rounded group-hover:bg-secondary/60 transition-colors" />
-                  <div className="h-6 w-6 bg-secondary/40 rounded group-hover:bg-secondary/60 transition-colors" />
-                </div>
-              </div>
+                {filter}
+              </button>
             ))}
           </div>
+        </header>
 
-          {/* Coming Soon Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center backdrop-blur-[1px] bg-background/40 rounded-xl pointer-events-none">
-            <div className="text-center">
-              <span className="text-2xl mb-2 block">👀</span>
-              <p className="text-sm text-muted-foreground italic">coming soon...</p>
-            </div>
-          </div>
+        {/* Projects Grid */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-16 pb-20">
+          {projects.map((project, index) => (
+            project.external ? (
+              <a
+                href={project.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                key={project.slug}
+                
+                className="relative p-3 -m-3 rounded-2xl group cursor-pointer block"
+                onMouseEnter={() => {
+                  setHoveredIndex(index);
+                  audioEngine.isEnabled() && audioEngine.playSound("click");
+                }}
+                onMouseLeave={() => setHoveredIndex(null)}
+              >
+                <AnimatePresence>
+                  {hoveredIndex === index && (
+                    <motion.div
+                      layoutId="project-hover"
+                      className="absolute inset-0 bg-secondary/80 rounded-2xl"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 35,
+                        opacity: { duration: 0.15 }
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+                
+                <div className="relative z-10 flex flex-col h-full">
+                  <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-5 bg-secondary/20 relative overflow-hidden">
+                    <img 
+                      src={project.image} 
+                      alt={project.title}
+                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]" 
+                    />
+                    {/* Minimal overlay */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center bg-black/30">
+                      <span className="text-white text-sm font-medium tracking-widest uppercase">View →</span>
+                    </div>
+                  </div>
+                  <div className="px-1 pb-1">
+                    <h3 className="text-base font-medium tracking-tight text-foreground mb-3 capitalize">{project.title}</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {project.tags?.map(tag => (
+                        <span 
+                          key={tag}
+                          className="text-xs text-muted-foreground bg-secondary/50 px-2.5 py-1 rounded-md"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </a>
+            ) : (
+              <Link 
+                to={`/projects/${project.slug}`}
+                key={project.slug}
+                className="relative p-3 -m-3 rounded-2xl group cursor-pointer block"
+                onMouseEnter={() => {
+                  setHoveredIndex(index);
+                  audioEngine.isEnabled() && audioEngine.playSound("click");
+                }}
+                onMouseLeave={() => setHoveredIndex(null)}
+              >
+                <AnimatePresence>
+                  {hoveredIndex === index && (
+                    <motion.div
+                      layoutId="project-hover"
+                      className="absolute inset-0 bg-secondary/80 rounded-2xl"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 35,
+                        opacity: { duration: 0.15 }
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+                
+                <div className="relative z-10 flex flex-col h-full">
+                  <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-5 bg-secondary/20">
+                    <img 
+                      src={project.image} 
+                      alt={project.title}
+                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]" 
+                    />
+                  </div>
+                  <div className="px-1 pb-1">
+                    <h3 className="text-base font-medium tracking-tight text-foreground mb-3 capitalize">{project.title}</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {project.tags?.map(tag => (
+                        <span 
+                          key={tag}
+                          className="text-xs text-muted-foreground bg-secondary/50 px-2.5 py-1 rounded-md"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            )
+          ))}
         </section>
       </div>
     </Layout>
