@@ -23,6 +23,10 @@ const Index = () => {
 
   const [soundEnabled, setSoundEnabled] = useState(true);
 
+  useEffect(() => {
+    audioEngine.setEnabled(true);
+  }, []);
+
   const toggleSound = useCallback(() => {
     const newState = !soundEnabled;
     setSoundEnabled(newState);
