@@ -42,15 +42,25 @@ class AudioEngine {
 
   constructor() {
     if (typeof window !== "undefined") {
-      this.context = new (window.AudioContext || (window as any).webkitAudioContext)();
       this.checkReducedMotion();
     }
   }
 
+  private getContext(): AudioContext | null {
+    if (!this.context && typeof window !== "undefined") {
+      this.context = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    return this.context;
+  }
+
   private checkReducedMotion() {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) {
-      this.enabled = false;
+    try {
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (prefersReducedMotion) {
+        this.enabled = false;
+      }
+    } catch {
+      // matchMedia not supported
     }
   }
 
@@ -63,33 +73,41 @@ class AudioEngine {
   }
 
   play(config: SoundConfig) {
-    if (!this.enabled || !this.context) return;
+    if (!this.enabled) return;
 
-    if (this.context.state === "suspended") {
-      this.context.resume();
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    if (ctx.state === "suspended") {
+      ctx.resume().catch(() => {});
     }
 
-    const oscillator = this.context.createOscillator();
-    const gainNode = this.context.createGain();
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
 
     oscillator.type = config.type;
-    oscillator.frequency.setValueAtTime(config.frequency.start, this.context.currentTime);
+    oscillator.frequency.setValueAtTime(config.frequency.start, ctx.currentTime);
 
     if (config.frequency.end) {
       oscillator.frequency.exponentialRampToValueAtTime(
         config.frequency.end,
-        this.context.currentTime + config.duration
+        ctx.currentTime + config.duration
       );
     }
 
-    gainNode.gain.setValueAtTime(config.gain, this.context.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, this.context.currentTime + config.duration);
+    gainNode.gain.setValueAtTime(config.gain, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + config.duration);
 
     oscillator.connect(gainNode);
-    gainNode.connect(this.context.destination);
+    gainNode.connect(ctx.destination);
 
-    oscillator.start(this.context.currentTime);
-    oscillator.stop(this.context.currentTime + config.duration);
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + config.duration);
+
+    oscillator.onended = () => {
+      oscillator.disconnect();
+      gainNode.disconnect();
+    };
   }
 
   playSound(name: SoundName) {
