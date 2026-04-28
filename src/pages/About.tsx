@@ -37,8 +37,9 @@ const About = () => {
                     fill="none"
                     strokeLinecap="round"
                   />
+                  
                   <path
-                    d="M33 2 L 39 4 L 36 10"
+                    d="M 31 5 L 38 4 L 39 11"
                     stroke="currentColor"
                     strokeWidth="1.5"
                     fill="none"
