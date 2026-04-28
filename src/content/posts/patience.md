@@ -1,6 +1,6 @@
 ---
 title: "Patience"
-date: "2026-02-06"
+date: "2026-04-30"
 excerpt: "why patience? why now?"
 tags: "patience, productivity, growth"
 ---

@@ -47,6 +47,59 @@ const BlogPost = () => {
     },
   };
 
+  const getYouTubeVideoId = (url: string) => {
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    return match ? match[1] : null;
+  };
+
+  const markdownComponents = {
+    img: ({ src, alt }: { src?: string; alt?: string }) => {
+      if (!src) return null;
+      return (
+        <figure className="my-8">
+          <img
+            src={src}
+            alt={alt || ''}
+            className="w-full max-w-3xl mx-auto rounded-xl shadow-lg"
+          />
+          {alt && alt !== src && (
+            <figcaption className="text-center text-sm text-muted-foreground mt-3">
+              {alt}
+            </figcaption>
+          )}
+        </figure>
+      );
+    },
+    a: ({ href, children, ...props }: any) => {
+      if (!href) return <a {...props}>{children}</a>;
+      const videoId = getYouTubeVideoId(href);
+      if (videoId) {
+        return (
+          <div className="my-8 relative rounded-xl overflow-hidden shadow-lg aspect-video bg-secondary/20">
+            <iframe
+              src={`https://www.youtube.com/embed/${videoId}`}
+              title="YouTube video"
+              className="absolute inset-0 w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        );
+      }
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary underline decoration-dotted underline-offset-2 hover:decoration-solid transition-all"
+          {...props}
+        >
+          {children}
+        </a>
+      );
+    },
+  };
+
   return (
     <Layout>
       <article className="animate-fade-in">
@@ -96,7 +149,7 @@ const BlogPost = () => {
           >
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
-              components={headingRenderer}
+              components={{ ...headingRenderer, ...markdownComponents }}
             >
               {post.content}
             </ReactMarkdown>

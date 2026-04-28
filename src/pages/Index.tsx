@@ -15,7 +15,7 @@ gsap.registerPlugin(InertiaPlugin);
 const Index = () => {
   const posts = getAllPosts();
   const allProjects = getAllProjects();
-  const orderedSlugs = ["kumo", "geksu", "align", "dhar", "kalakoi", "root"];
+  const orderedSlugs = ["kumo", "align", "geksu", "dhar", "kalakoi", "root"];
   const projects = [
     ...allProjects.filter(p => orderedSlugs.includes(p.slug)).sort((a, b) => orderedSlugs.indexOf(a.slug) - orderedSlugs.indexOf(b.slug)),
     ...allProjects.filter(p => !orderedSlugs.includes(p.slug))
