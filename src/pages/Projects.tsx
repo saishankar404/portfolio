@@ -22,7 +22,7 @@ const Projects = () => {
         {/* Header */}
         <header className="mb-12">
           <h1 className="text-2xl font-semibold tracking-tight mb-8 text-foreground">
-            experiments
+            projects
           </h1>
           
           {/* Filters */}

@@ -123,7 +123,7 @@ const Index = () => {
           <p>
             i've worked on multiple design and web{" "}
             <Link to="/projects" className="text-primary underline decoration-dotted underline-offset-2 hover:decoration-solid">
-              experiments
+              projects
             </Link>, explored branding and ui systems, and shipped things at blazing speed without compromising on quality, while actively trying to understand the fundamentals deeply.
           </p>
 
@@ -132,7 +132,7 @@ const Index = () => {
           </p>
 
           <p>
-            i write occasionally. this site is mainly a space to document my thoughts, projects, and experiments, and also a place to know me a bit better. feel free to dm me{" "}
+            i write occasionally. this site is mainly a space to document my thoughts and projects, and also a place to know me a bit better. feel free to dm me{" "}
             <a
               href="https://x.com/saishankar404"
               target="_blank"

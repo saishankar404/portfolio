@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Canvas Waves</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #fafafa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .info {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            pointer-events: none;
+            color: #171717;
+        }
+        .info h1 {
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            margin-bottom: 4px;
+            text-transform: lowercase;
+        }
+        .info p {
+            font-size: 11px;
+            color: #888;
+            text-transform: lowercase;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="wave-canvas"></canvas>
+    
+    <div class="info">
+        <h1>interactive canvas waves</h1>
+        <p>move mouse to distort the particle structure</p>
+    </div>
+
+    <!-- GSAP -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('wave-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            const particles = [];
+            const count = 120;
+            const rows = 15;
+            
+            // Mouse object
+            const mouse = {
+                x: null,
+                y: null,
+                radius: 120,
+                targetRadius: 120
+            };
+
+            // Particle Class
+            class Particle {
+                constructor(x, y, row, col) {
+                    this.baseX = x;
+                    this.baseY = y;
+                    this.x = x;
+                    this.y = y;
+                    this.row = row;
+                    this.col = col;
+                    this.size = 1.5 + Math.random() * 1.5;
+                    this.density = (Math.random() * 20) + 10;
+                    this.color = row % 2 === 0 ? 'rgba(23, 23, 23, 0.45)' : 'rgba(23, 23, 23, 0.25)';
+                    this.angle = Math.random() * 360;
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+
+                update(time) {
+                    // 1. Basic Sine Wave Motion
+                    const waveOffset = Math.sin(time * 0.002 + (this.col * 0.1) + (this.row * 0.15)) * 15;
+                    const targetX = this.baseX;
+                    const targetY = this.baseY + waveOffset;
+
+                    // 2. Mouse Interaction (Magnetic push/pull)
+                    if (mouse.x !== null && mouse.y !== null) {
+                        const dx = mouse.x - this.x;
+                        const dy = mouse.y - this.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < mouse.radius) {
+                            const force = (mouse.radius - distance) / mouse.radius; // 0 to 1
+                            const angle = Math.atan2(dy, dx);
+                            
+                            // Push away from mouse
+                            const pushX = Math.cos(angle) * force * 45;
+                            const pushY = Math.sin(angle) * force * 45;
+
+                            this.x += (targetX - pushX - this.x) * 0.1;
+                            this.y += (targetY - pushY - this.y) * 0.1;
+                            return;
+                        }
+                    }
+
+                    // Smooth return to base wave position
+                    this.x += (targetX - this.x) * 0.08;
+                    this.y += (targetY - this.y) * 0.08;
+                }
+            }
+
+            // Initialize grid of particles
+            function init() {
+                particles.length = 0;
+                const gapX = width / (count - 1);
+                const gapY = (height * 0.5) / (rows - 1);
+                const startY = height * 0.25;
+
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < count; c++) {
+                        const x = c * gapX;
+                        const y = startY + r * gapY;
+                        particles.push(new Particle(x, y, r, c));
+                    }
+                }
+            }
+
+            init();
+
+            // Animation Loop
+            function animate(time) {
+                ctx.clearRect(0, 0, width, height);
+                
+                // Draw decorative lines between some particles for a web look
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(23, 23, 23, 0.03)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < particles.length; i += 15) {
+                    if (i + 1 < particles.length && particles[i].row === particles[i+1].row) {
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[i+1].x, particles[i+1].y);
+                    }
+                }
+                ctx.stroke();
+
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update(time);
+                    particles[i].draw();
+                }
+                
+                requestAnimationFrame(animate);
+            }
+
+            requestAnimationFrame(animate);
+
+            // Mouse Move Event
+            window.addEventListener('mousemove', (e) => {
+                // Smoothly update mouse coordinates
+                gsap.to(mouse, {
+                    duration: 0.3,
+                    x: e.clientX,
+                    y: e.clientY,
+                    overwrite: 'auto'
+                });
+            });
+
+            // Mouse Leave Event
+            window.addEventListener('mouseleave', () => {
+                gsap.to(mouse, {
+                    duration: 0.5,
+                    x: null,
+                    y: null,
+                    overwrite: 'auto'
+                });
+            });
+
+            // Click interaction (attraction pulse)
+            window.addEventListener('mousedown', () => {
+                gsap.to(mouse, {
+                    radius: 200,
+                    duration: 0.15,
+                    yoyo: true,
+                    repeat: 1,
+                    onComplete: () => {
+                        mouse.radius = 120;
+                    }
+                });
+            });
+
+            // Window Resize
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+                init();
+            });
+        });
+    </script>
+</body>
+</html>

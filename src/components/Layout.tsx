@@ -8,7 +8,8 @@ import { audioEngine } from "@/lib/audio";
 
 const navItems = [
   { label: "Home", path: "/" },
-  { label: "Experiments", path: "/projects" },
+  { label: "Projects", path: "/projects" },
+  { label: "Experiments", path: "/experiments" },
   { label: "About", path: "/about" },
 ];
 
@@ -75,6 +76,7 @@ export function Layout({ children, maxWidth = "max-w-2xl" }: LayoutProps) {
             >
               {navItems.map((item, index) => {
                 const isActive = location.pathname === item.path;
+                const isExperiments = item.label === "Experiments";
                 return (
                   <motion.div
                     key={item.label}
@@ -88,8 +90,12 @@ export function Layout({ children, maxWidth = "max-w-2xl" }: LayoutProps) {
                       className={cn(
                         "block text-lg py-3 px-4 rounded-xl transition-colors",
                         isActive
-                          ? "text-foreground bg-secondary/50 font-medium"
-                          : "text-muted-foreground hover:text-foreground hover:bg-secondary/30"
+                          ? (isExperiments 
+                              ? "text-violet-600 dark:text-violet-400 bg-violet-100/30 dark:bg-violet-950/20 font-medium" 
+                              : "text-foreground bg-secondary/50 font-medium")
+                          : (isExperiments
+                              ? "text-violet-500 dark:text-violet-400 hover:bg-violet-100/30 dark:hover:bg-violet-950/15"
+                              : "text-muted-foreground hover:text-foreground hover:bg-secondary/30")
                       )}
                     >
                       {item.label}
@@ -124,6 +130,7 @@ export function Layout({ children, maxWidth = "max-w-2xl" }: LayoutProps) {
         <nav className="px-4 flex-1 space-y-0.5">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
+            const isExperiments = item.label === "Experiments";
             return (
               <Link
                 key={item.label}
@@ -131,8 +138,12 @@ export function Layout({ children, maxWidth = "max-w-2xl" }: LayoutProps) {
                 className={cn(
                   "block text-sm py-1.5 px-2 rounded-md transition-colors",
                   isActive
-                    ? "text-foreground bg-secondary/50"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/30"
+                    ? (isExperiments 
+                        ? "text-violet-600 dark:text-violet-400 bg-violet-100/30 dark:bg-violet-950/20 font-medium" 
+                        : "text-foreground bg-secondary/50")
+                    : (isExperiments
+                        ? "text-violet-500 dark:text-violet-400 hover:bg-violet-100/30 dark:hover:bg-violet-950/15"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/30")
                 )}
               >
                 {item.label}

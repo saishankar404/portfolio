@@ -1,0 +1,284 @@
+import { useState, useEffect, useRef } from "react";
+import { Layout } from "@/components/Layout";
+import { X, Maximize2, ExternalLink } from "lucide-react";
+import { experimentsList, Experiment } from "@/lib/experiments";
+import { audioEngine } from "@/lib/audio";
+import { gsap } from "gsap";
+import { AnimatePresence, motion } from "framer-motion";
+
+interface CardProps {
+  experiment: Experiment;
+  onOpen: () => void;
+}
+
+function ExperimentCard({ experiment, onOpen }: CardProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+
+    const onMouseEnter = () => {
+      if (audioEngine.isEnabled()) {
+        audioEngine.playSound("click");
+      }
+      
+      // Animate card lift up (no shadows)
+      gsap.to(card, {
+        y: -6,
+        duration: 0.4,
+        ease: "power2.out"
+      });
+
+      // Scale & blur preview image
+      if (previewRef.current) {
+        gsap.to(previewRef.current, {
+          scale: 1.05,
+          filter: "blur(6px)",
+          opacity: 0.6,
+          duration: 0.4,
+          ease: "power2.out"
+        });
+      }
+
+      // Show overlay
+      if (overlayRef.current) {
+        gsap.to(overlayRef.current, {
+          opacity: 1,
+          duration: 0.3,
+          ease: "power2.out"
+        });
+      }
+
+      // Pop "Open" button
+      if (btnRef.current) {
+        gsap.fromTo(btnRef.current, 
+          { scale: 0.8, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.4, ease: "elastic.out(1, 0.75)" }
+        );
+      }
+    };
+
+    const onMouseLeave = () => {
+      // Revert card positioning
+      gsap.to(card, {
+        y: 0,
+        duration: 0.4,
+        ease: "power2.out"
+      });
+
+      // Revert preview image
+      if (previewRef.current) {
+        gsap.to(previewRef.current, {
+          scale: 1,
+          filter: "blur(0px)",
+          opacity: 1,
+          duration: 0.4,
+          ease: "power2.out"
+        });
+      }
+
+      // Hide overlay
+      if (overlayRef.current) {
+        gsap.to(overlayRef.current, {
+          opacity: 0,
+          duration: 0.3,
+          ease: "power2.out"
+        });
+      }
+    };
+
+    card.addEventListener("mouseenter", onMouseEnter);
+    card.addEventListener("mouseleave", onMouseLeave);
+
+    return () => {
+      card.removeEventListener("mouseenter", onMouseEnter);
+      card.removeEventListener("mouseleave", onMouseLeave);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={cardRef}
+      onClick={onOpen}
+      className="experiment-card cursor-pointer group flex flex-col justify-between bg-muted/20 border border-border/40 rounded-3xl p-5 overflow-hidden transition-all duration-300 min-h-[360px] relative"
+    >
+      {/* Main Preview */}
+      <div className="flex-1 flex items-center justify-center relative rounded-2xl bg-secondary/20 border border-border/10 overflow-hidden mb-4 p-4 min-h-[200px]">
+        {/* Preview Content */}
+        <div ref={previewRef} className="w-full h-full flex items-center justify-center transition-all duration-300">
+          {experiment.id === "02_canvas_waves" ? (
+            // Custom decorative SVG design for the waves experiment
+            <svg viewBox="0 0 200 120" className="w-4/5 h-auto text-foreground/40 opacity-70">
+              <path d="M10,60 Q45,20 90,60 T190,60" fill="none" stroke="currentColor" strokeWidth="1.5" className="animate-pulse" />
+              <path d="M10,60 Q50,90 100,50 T190,60" fill="none" stroke="currentColor" strokeWidth="0.8" opacity="0.4" />
+              <path d="M10,60 Q35,50 80,75 T190,60" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.3" />
+              {/* Particle points */}
+              <circle cx="45" cy="40" r="2" fill="currentColor" opacity="0.6" />
+              <circle cx="90" cy="60" r="1.5" fill="currentColor" />
+              <circle cx="135" cy="70" r="2.5" fill="currentColor" opacity="0.8" />
+              <circle cx="70" cy="55" r="1.2" fill="currentColor" opacity="0.4" />
+              <circle cx="160" cy="45" r="2" fill="currentColor" opacity="0.5" />
+            </svg>
+          ) : (
+            // Image Preview
+            <img
+              src={experiment.image}
+              alt={experiment.title}
+              className="object-cover max-h-[160px] max-w-full rounded-lg"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
+              }}
+            />
+          )}
+        </div>
+
+        {/* Hover Overlay */}
+        <div 
+          ref={overlayRef} 
+          className="absolute inset-0 bg-background/20 backdrop-blur-[2px] opacity-0 flex items-center justify-center transition-opacity duration-300"
+        >
+          <button
+            ref={btnRef}
+            className="px-6 py-2.5 bg-foreground text-background font-medium text-xs rounded-full flex items-center gap-1.5 opacity-0 transition-all"
+          >
+            <span>Open</span>
+            <Maximize2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Title & Static Description */}
+      <div className="z-10 mt-auto">
+        <h3 className="text-sm font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary mb-1.5 text-lowercase">
+          {experiment.title}
+        </h3>
+        
+        <p className="text-[11px] text-muted-foreground leading-normal lowercase">
+          {experiment.description}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default function Experiments() {
+  const [activeExperiment, setActiveExperiment] = useState<Experiment | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  // Stagger entry animation on mount
+  useEffect(() => {
+    if (gridRef.current) {
+      gsap.fromTo(
+        gridRef.current.querySelectorAll(".experiment-card"),
+        { opacity: 0, y: 40 },
+        { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power3.out" }
+      );
+    }
+  }, []);
+
+  const handleOpenExperiment = (exp: Experiment) => {
+    setActiveExperiment(exp);
+    if (audioEngine.isEnabled()) {
+      audioEngine.playSound("success");
+    }
+  };
+
+  const handleCloseExperiment = () => {
+    setActiveExperiment(null);
+    if (audioEngine.isEnabled()) {
+      audioEngine.playSound("click");
+    }
+  };
+
+  return (
+    <Layout maxWidth="max-w-5xl">
+      <div className="animate-fade-in w-full mx-auto">
+        {/* Header */}
+        <header className="mb-12">
+          <h1 className="text-2xl font-semibold tracking-tight mb-8 text-foreground lowercase">
+            experiments
+          </h1>
+        </header>
+
+        {/* Projects Grid */}
+        <section 
+          ref={gridRef}
+          className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-20"
+        >
+          {experimentsList.map((exp) => (
+            <ExperimentCard
+              key={exp.id}
+              experiment={exp}
+              onOpen={() => handleOpenExperiment(exp)}
+            />
+          ))}
+        </section>
+      </div>
+
+      {/* Interactive Fullscreen Iframe Modal */}
+      <AnimatePresence>
+        {activeExperiment && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-background/60 backdrop-blur-md flex flex-col p-4 sm:p-6 md:p-8"
+          >
+            {/* Modal Navigation Header (No Shadow) */}
+            <motion.div 
+              initial={{ y: -10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="flex justify-between items-center bg-background/80 border border-border/30 rounded-2xl px-5 py-3 mb-4 backdrop-blur-md"
+            >
+              <div className="flex items-center gap-3">
+                <h2 className="text-xs sm:text-sm font-semibold text-foreground text-lowercase">
+                  {activeExperiment.title}
+                </h2>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <a 
+                  href={activeExperiment.path} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="p-1.5 hover:bg-muted/40 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                  title="Open in new window"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+                <button
+                  onClick={handleCloseExperiment}
+                  className="p-1.5 hover:bg-muted/40 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                  title="Close preview"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Main Preview Container (No Shadow) */}
+            <motion.div 
+              initial={{ scale: 0.97, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.15, type: "spring", stiffness: 100, damping: 20 }}
+              className="flex-1 bg-background border border-border/30 rounded-3xl overflow-hidden relative"
+            >
+              <iframe
+                src={activeExperiment.path}
+                title={activeExperiment.title}
+                className="w-full h-full border-none"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                sandbox="allow-scripts allow-same-origin allow-popups"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </Layout>
+  );
+}

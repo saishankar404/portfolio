@@ -6,6 +6,7 @@ const Index = lazy(() => import("@/pages/Index"));
 const BlogPost = lazy(() => import("@/pages/BlogPost"));
 const About = lazy(() => import("@/pages/About"));
 const Projects = lazy(() => import("@/pages/Projects"));
+const Experiments = lazy(() => import("@/pages/Experiments"));
 const ProjectPost = lazy(() => import("@/pages/ProjectPost"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
@@ -20,6 +21,7 @@ export const AnimatedRoutes = () => {
                     <Route path="/blog/:slug" element={<BlogPost />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/projects" element={<Projects />} />
+                    <Route path="/experiments" element={<Experiments />} />
                     <Route path="/projects/:slug" element={<ProjectPost />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
