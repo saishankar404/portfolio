@@ -18,11 +18,11 @@ export const experimentsList: Experiment[] = [
     image: "/experiments/01_inertia_gallery/assets/medias/01.png"
   },
   {
-    id: "02_canvas_waves",
-    title: "interactive canvas waves",
-    category: "canvas",
-    description: "dynamic particle waves rendered on HTML5 canvas with magnetic attraction and distortion force based on mouse coordinates.",
-    path: "/experiments/02_canvas_waves/index.html",
+    id: "02_interactive_pricing_slider",
+    title: "interactive pricing slider",
+    category: "interactions",
+    description: "a beautiful pricing calculator slider featuring custom physics, numeric rolling tick animations, sound feedback, and a responsive layout.",
+    path: "/experiments/02_interactive_pricing_slider/index.html",
     image: "/placeholder.svg"
   }
 ];

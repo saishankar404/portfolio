@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing Slider</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Figtree & Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- GSAP & Draggable Plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Figtree', sans-serif;
+            background: radial-gradient(circle at center, #ffffff 0%, #f3f4f6 100%);
+            /* Anti-aliasing for crisper text */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .font-poppins {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Subtle corner crop marks seen in the original image */
+        .corner-mark {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background-image: radial-gradient(#e5e7eb 1.5px, transparent 1.5px);
+            background-size: 5px 5px;
+            opacity: 0.8;
+        }
+        .cm-tl { top: -8px; left: -8px; }
+        .cm-tr { top: -8px; right: -8px; }
+        .cm-bl { bottom: -8px; left: -8px; }
+        .cm-br { bottom: -8px; right: -8px; }
+
+        /* Ticks container styling */
+        .slider-ticks {
+            background-image: repeating-linear-gradient(to right, #cbd5e1, #cbd5e1 1px, transparent 1px, transparent 3.5px);
+            opacity: 0.6;
+        }
+
+        /* Container to keep dollar sign and numbers aligned nicely */
+        .price-text-container {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+        }
+
+        /* Subtle blur effect added via JS during slider drag */
+        .motion-blur {
+            filter: blur(0.8px);
+            transform: scaleY(1.01);
+            transition: filter 0s, transform 0s;
+        }
+
+        /* Calligraph-style slot mask for top and bottom fading */
+        .slots-mask {
+            display: inline-flex;
+            align-items: baseline;
+            justify-content: center;
+            overflow: visible;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 0.15em, black calc(100% - 0.15em), transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 0.15em, black calc(100% - 0.15em), transparent 100%);
+        }
+
+        /* Selected state for the credits bubble with settle border and spacing/padding */
+        .bubble-selected {
+            border-color: #cbd5e1 !important;
+            box-shadow: 0 0 0 2px #ffffff, 0 0 0 3.5px #C85DEE, 0 4px 12px -2px rgba(200, 93, 238, 0.15) !important;
+        }
+    </style>
+</head>
+<body class="text-gray-800 selection:bg-purple-100">
+
+    <div class="w-full max-w-2xl px-4 py-8 flex flex-col items-center text-center">
+
+        <!-- Headline (Responsive typography) -->
+        <h1 class="font-poppins text-3xl sm:text-[42px] leading-tight text-[#1a1a1a] font-normal mb-5 tracking-tight">
+            Pay only for what gets done
+        </h1>
+
+        <!-- Subheadline -->
+        <div class="text-[#4b5563] text-sm sm:text-[15px] mb-8 sm:mb-12 px-4 leading-relaxed max-w-[480px] mx-auto select-none">
+            Start with a flat monthly rate that includes <strong class="text-gray-800 font-semibold">4,000 credits.</strong>
+            <svg class="w-[16px] h-[16px] text-gray-400 inline-block align-text-bottom ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+
+        <!-- Main Price Display Card -->
+        <div id="price-card" class="bg-white border border-gray-100 rounded-none shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] h-[110px] sm:h-[130px] flex items-center justify-center relative z-10 select-none mb-8 sm:mb-12">
+            <!-- Decorative Corner Marks inside the card so they follow borders on resize -->
+            <div class="corner-mark cm-tl"></div>
+            <div class="corner-mark cm-tr"></div>
+            <div class="corner-mark cm-bl"></div>
+            <div class="corner-mark cm-br"></div>
+
+            <div id="price-card-wrapper" class="price-text-container w-max">
+                <span class="text-[64px] sm:text-[84px] text-gray-600 font-light mr-1.5 sm:mr-2 leading-none">$</span>
+                <!-- Price value container which Calligraph will render into -->
+                <span id="price-value" class="text-[64px] sm:text-[84px] font-poppins text-[#1f2937] tracking-tight leading-none origin-center inline-block">69.99</span>
+            </div>
+        </div>
+
+        <!-- Description Texts -->
+        <p class="text-[#374151] text-sm sm:text-[15px] font-medium mb-1.5 px-4 select-none max-w-[480px] mx-auto leading-relaxed">
+            <span class="bg-purple-100/60 px-1.5 py-0.5 rounded cursor-default inline-block sm:inline">This pricing scales as your automations do. No surprises – just usage.</span>
+        </p>
+        <p class="text-[#6b7280] text-xs sm:text-[14px] mb-12 sm:mb-16 px-4 max-w-[480px] mx-auto leading-relaxed">
+            Use the slider to preview your monthly cost. Custom pricing available.
+        </p>
+
+        <!-- Interactive Slider Section -->
+        <div class="w-full max-w-[480px] relative px-4 mt-4 sm:mt-8 select-none">
+
+            <!-- Floating Value Bubble -->
+            <div id="slider-bubble" class="absolute -top-10 left-0 -ml-[36px] w-[72px] h-[28px] bg-white border border-[#cbd5e1] rounded-full flex items-center justify-center text-[13px] font-semibold text-[#475569] shadow-sm z-20 pointer-events-none origin-bottom opacity-0 scale-90">
+                7,000
+            </div>
+
+            <!-- Track Container (Hover Target) -->
+            <div id="slider-track" class="relative h-12 w-full cursor-pointer flex items-center group touch-none mb-4">
+                <!-- Ticks Container (Wavelength) -->
+                <div id="ticks-container" class="w-full h-full flex items-center justify-between">
+                    <!-- Ticks injected by JS -->
+                </div>
+                <!-- Reference Dots Container -->
+                <div id="dots-container" class="absolute w-full h-full pointer-events-none top-0 left-0">
+                    <!-- Dots injected by JS -->
+                </div>
+                <!-- Slider Thumb Handle -->
+                <div id="slider-thumb" class="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-2 border-[#cbd5e1] shadow-[0_1.5px_3px_rgba(0,0,0,0.15)] z-30 pointer-events-none -ml-[7px]"></div>
+            </div>
+
+            <!-- Min/Max Labels -->
+            <div class="flex justify-between w-full mt-4 text-[12px] sm:text-[13px] text-gray-400 font-medium">
+                <span>4,000 credits</span>
+                <span>25,001 credits</span>
+            </div>
+        </div>
+
+        <!-- Footer Container -->
+        <div class="w-full max-w-[480px] px-4 flex justify-between items-center mt-12 pt-6 border-t border-gray-100 text-gray-400 text-[13px]">
+            <!-- Left side: small mute icon button with NO container, border, radius, background, just raw icon -->
+            <button id="sound-toggle" class="p-1 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors duration-200 cursor-pointer" aria-label="Toggle Sound">
+                <span id="sound-icon-wrapper" class="flex items-center justify-center">
+                    <!-- Icon injected by JS -->
+                </span>
+            </button>
+            <!-- Right side: built by @sai -->
+            <span class="font-medium text-gray-400/80 select-none">built by <a href="https://x.com/saishankar404" target="_blank" rel="noopener noreferrer" id="author-link" class="text-gray-400 font-semibold inline-block transition-colors duration-200">@sai</a></span>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Web Audio API global sound synthesis ---
+        let audioCtx = null;
+        let isMuted = true; // Default to muted on page load
+        let lastSoundTime = 0;
+        let lastTickSoundTime = 0;
+
+        // Try to unlock the AudioContext inside a user gesture
+        function unlockAudioContext() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume().then(() => {
+                        removeUnlockListeners();
+                    }).catch(err => {
+                        console.warn("Failed to resume AudioContext inside gesture:", err);
+                    });
+                } else if (audioCtx && audioCtx.state === 'running') {
+                    removeUnlockListeners();
+                }
+            } catch (err) {
+                console.warn("Failed to unlock AudioContext:", err);
+            }
+        }
+
+        function removeUnlockListeners() {
+            window.removeEventListener('click', unlockAudioContext);
+            window.removeEventListener('mousedown', unlockAudioContext);
+            window.removeEventListener('mouseup', unlockAudioContext);
+            window.removeEventListener('touchstart', unlockAudioContext);
+            window.removeEventListener('touchend', unlockAudioContext);
+            window.removeEventListener('pointerdown', unlockAudioContext);
+        }
+
+        // Add standard user gesture listeners
+        window.addEventListener('click', unlockAudioContext);
+        window.addEventListener('mousedown', unlockAudioContext);
+        window.addEventListener('mouseup', unlockAudioContext);
+        window.addEventListener('touchstart', unlockAudioContext);
+        window.addEventListener('touchend', unlockAudioContext);
+        window.addEventListener('pointerdown', unlockAudioContext);
+
+        function playTick(frequency = 1000, volume = 0.04, decay = 0.02) {
+            // ONLY play sound if AudioContext exists and is running
+            if (!audioCtx || audioCtx.state !== 'running') {
+                return;
+            }
+            try {
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(frequency * 0.4, audioCtx.currentTime + decay);
+
+                gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + decay);
+
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + decay + 0.01);
+            } catch (e) {
+                console.warn("Audio Context error:", e);
+            }
+        }
+
+        // --- Calligraph-style Slot Machine Column Animation in Vanilla JS ---
+        class DigitColumn {
+            constructor(digit, direction) {
+                this.type = 'digit';
+                this.digit = digit;
+                this.current = digit;
+                this.direction = direction || 1;
+                this.digitElements = [];
+                this.tween = null;
+                this.initDOM();
+            }
+
+            initDOM() {
+                this.el = document.createElement('span');
+                this.el.style.display = 'inline-block';
+                this.el.style.position = 'relative';
+                this.el.style.verticalAlign = 'top';
+
+                // Hidden reference digit to maintain exact height/width of the character
+                const ref = document.createElement('span');
+                ref.style.visibility = 'hidden';
+                ref.style.whiteSpace = 'pre';
+                ref.style.display = 'inline-block';
+                ref.textContent = '0';
+                this.el.appendChild(ref);
+
+                // Create absolute elements for digits 0 to 9
+                for (let i = 0; i < 10; i++) {
+                    const digitSpan = document.createElement('span');
+                    digitSpan.style.position = 'absolute';
+                    digitSpan.style.top = '0';
+                    digitSpan.style.left = '50%';
+                    digitSpan.style.display = 'inline-block';
+                    digitSpan.style.whiteSpace = 'pre';
+                    digitSpan.style.transform = 'translateX(-50%) translateY(100%)';
+                    digitSpan.style.opacity = '0';
+                    digitSpan.textContent = i;
+                    this.el.appendChild(digitSpan);
+                    this.digitElements.push(digitSpan);
+                }
+
+                this.updatePositions();
+            }
+
+            // Calculate and apply position/opacity offsets for digits in the slot
+            updatePositions() {
+                const c = this.current;
+                for (let n = 0; n < 10; n++) {
+                    let offset = (n - c) % 10;
+                    // JavaScript modulo can be negative, convert to true positive modulo
+                    offset = ((offset % 10) + 10) % 10;
+                    if (offset > 5) offset -= 10;
+                    
+                    const clamped = Math.max(-1, Math.min(1, offset));
+                    const yPercent = -clamped * 100;
+                    
+                    this.digitElements[n].style.transform = `translateX(-50%) translateY(${yPercent}%)`;
+                    
+                    const dist = Math.abs(offset);
+                    // Fade out digits that are moving out of frame
+                    this.digitElements[n].style.opacity = dist <= 1 ? (1 - dist * 0.75) : 0;
+                }
+            }
+
+            // Animate slot spin to new digit
+            setDigit(newDigit, direction) {
+                const oldDigit = this.digit;
+                if (newDigit === oldDigit) return;
+
+                this.digit = newDigit;
+                this.direction = direction; // Use raw direction (1, -1, or 0)
+
+                // Math-based target calculations to ensure we land exactly on integers
+                let base = Math.floor(this.current);
+                let baseDigit = ((base % 10) + 10) % 10;
+                
+                let k = (newDigit - baseDigit) % 10;
+                k = ((k % 10) + 10) % 10; // offset in range [0, 9]
+                
+                let targetValue = base + k;
+                
+                if (direction > 0) {
+                    if (targetValue < this.current) {
+                        targetValue += 10;
+                    }
+                } else if (direction < 0) {
+                    if (targetValue > this.current) {
+                        targetValue -= 10;
+                    }
+                } else {
+                    // Closest candidate when direction is neutral
+                    let alt1 = targetValue - 10;
+                    let alt2 = targetValue + 10;
+                    let d = Math.abs(targetValue - this.current);
+                    let d1 = Math.abs(alt1 - this.current);
+                    let d2 = Math.abs(alt2 - this.current);
+                    
+                    if (d1 < d) {
+                        targetValue = alt1;
+                        d = d1;
+                    }
+                    if (d2 < d) {
+                        targetValue = alt2;
+                    }
+                }
+
+                // Kill the previous active tween to prevent overlaps
+                if (this.tween) {
+                    this.tween.kill();
+                }
+
+                // Animate using GSAP for buttery smooth rendering
+                this.tween = gsap.to(this, {
+                    current: targetValue,
+                    duration: 0.38,
+                    ease: "power2.out",
+                    onUpdate: () => {
+                        this.updatePositions();
+                    },
+                    onComplete: () => {
+                        this.tween = null;
+                        this.current = targetValue;
+                        this.updatePositions();
+                    }
+                });
+            }
+        }
+
+        class StaticColumn {
+            constructor(char) {
+                this.type = 'static';
+                this.char = char;
+                this.initDOM();
+            }
+
+            initDOM() {
+                this.el = document.createElement('span');
+                this.el.style.display = 'inline-block';
+                this.el.style.whiteSpace = 'pre';
+                this.el.textContent = this.char;
+            }
+        }
+
+        class CalligraphSlots {
+            constructor(element) {
+                this.element = element;
+                this.columns = []; // Keeps track of columns, from right to left
+                this.prevText = '';
+
+                // Clear the static text from the HTML markup to prevent duplicates/overlaps
+                this.element.innerHTML = '';
+
+                // Apply initial layout styles
+                this.element.style.display = 'inline-flex';
+                this.element.style.position = 'relative';
+                this.element.classList.add('slots-mask');
+            }
+
+            update(newText, directionOverride) {
+                if (newText === this.prevText) return;
+
+                const oldChars = Array.from(this.prevText).reverse();
+                const newChars = Array.from(newText).reverse();
+
+                // Determine trend direction
+                const toNum = (s) => parseFloat(s.replace(/[^0-9.-]/g, "")) || 0;
+                const direction = directionOverride !== undefined ? directionOverride : Math.sign(toNum(newText) - toNum(this.prevText));
+
+                const nextColumns = [];
+                let changedCount = 0;
+
+                // Reconcile columns matching digits and static chars
+                for (let i = 0; i < newChars.length; i++) {
+                    const char = newChars[i];
+                    const isDigit = char >= '0' && char <= '9';
+                    const oldCol = this.columns[i];
+
+                    if (isDigit) {
+                        if (oldCol && oldCol.type === 'digit') {
+                            if (oldCol.digit !== parseInt(char)) {
+                                changedCount++;
+                            }
+                            oldCol.setDigit(parseInt(char), direction);
+                            nextColumns.push(oldCol);
+                        } else {
+                            changedCount++;
+                            // Replaced column: clean up previous DOM element immediately
+                            if (oldCol) {
+                                oldCol.el.remove();
+                            }
+                            const col = new DigitColumn(parseInt(char), direction);
+                            gsap.fromTo(col.el, { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.25 });
+                            nextColumns.push(col);
+                        }
+                    } else {
+                        if (oldCol && oldCol.type === 'static' && oldCol.char === char) {
+                            nextColumns.push(oldCol);
+                        } else {
+                            // Replaced column: clean up previous DOM element immediately
+                            if (oldCol) {
+                                oldCol.el.remove();
+                            }
+                            const col = new StaticColumn(char);
+                            gsap.fromTo(col.el, { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.25 });
+                            nextColumns.push(col);
+                        }
+                    }
+                }
+
+                // Fade out and remove columns that are no longer needed
+                for (let i = newChars.length; i < this.columns.length; i++) {
+                    const col = this.columns[i];
+                    col.el.style.position = 'absolute'; // Prevent pushing other columns while fading
+                    gsap.to(col.el, {
+                        opacity: 0,
+                        scale: 0.8,
+                        duration: 0.2,
+                        onComplete: () => col.el.remove()
+                    });
+                }
+
+                // Re-append active columns to keep DOM ordered correctly (left-to-right)
+                for (let i = nextColumns.length - 1; i >= 0; i--) {
+                    this.element.appendChild(nextColumns[i].el);
+                }
+
+                this.columns = nextColumns;
+                this.prevText = newText;
+
+                // Play a mechanical plip/click when digits change, but only after first user gesture (meaning audioCtx has been initialized)
+                if (changedCount > 0 && typeof playTick === 'function' && !isMuted && audioCtx) {
+                    const now = Date.now();
+                    const toNum = (s) => parseFloat(s.replace(/[^0-9.-]/g, "")) || 0;
+                    const currentIntervalUnit = Math.floor(toNum(newText) * 2); // 50-cent value boundaries
+                    const lastIntervalUnit = Math.floor(toNum(this.prevText) * 2);
+                    
+                    if (currentIntervalUnit !== lastIntervalUnit && now - lastSoundTime >= 90) { // Spaced out triggers (90ms throttle)
+                        const jitter = (Math.random() - 0.5) * 160; // +/- 80Hz pitch jitter for organic texture
+                        if (changedCount === 1) {
+                            playTick(1500 + jitter, 0.12, 0.035); // 1500Hz, volume 0.12, decay 0.035s (audible watch click)
+                        } else {
+                            playTick(1350 + jitter, 0.18, 0.045); // 1350Hz, volume 0.18, decay 0.045s
+                        }
+                        lastSoundTime = now;
+                    }
+                }
+            }
+        }
+
+        // --- Pricing Slider Application Logic ---
+        document.addEventListener("DOMContentLoaded", () => {
+            const track = document.getElementById('slider-track');
+            const bubble = document.getElementById('slider-bubble');
+            const priceEl = document.getElementById('price-value');
+            const priceCardWrapper = document.getElementById('price-card-wrapper');
+            const ticksContainer = document.getElementById('ticks-container');
+            const dotsContainer = document.getElementById('dots-container');
+            const thumb = document.getElementById('slider-thumb');
+
+            // Initialize Calligraph renderer on the price value element
+            const priceCalligraph = new CalligraphSlots(priceEl);
+
+            // --- Sound Preferences Toggle Logic ---
+            const soundToggle = document.getElementById('sound-toggle');
+            const soundIconWrapper = document.getElementById('sound-icon-wrapper');
+
+            const unmutedSVG = `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+            </svg>`;
+
+            const mutedSVG = `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+            </svg>`;
+
+            function updateSoundIcon() {
+                soundIconWrapper.innerHTML = isMuted ? mutedSVG : unmutedSVG;
+                soundToggle.setAttribute('title', isMuted ? 'Unmute Sound' : 'Mute Sound');
+            }
+
+            updateSoundIcon();
+
+            soundToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                unlockAudioContext();
+                isMuted = !isMuted;
+                updateSoundIcon();
+                if (!isMuted) {
+                    if (audioCtx && audioCtx.state === 'running') {
+                        playTick(1200, 0.08, 0.04);
+                    } else if (audioCtx && audioCtx.state === 'suspended') {
+                        audioCtx.resume().then(() => {
+                            playTick(1200, 0.08, 0.04);
+                        });
+                    }
+                }
+            });
+
+            let lastTickIndex = -1;
+
+            // Auto-size price card bounds dynamically using ResizeObserver
+            const priceCard = document.getElementById('price-card');
+            let isInitialMeasure = true;
+
+            const cardResizeObserver = new ResizeObserver(([entry]) => {
+                const targetWidth = Math.ceil(entry.contentRect.width);
+                // Dynamically scale padding based on mobile screen width
+                const padding = window.innerWidth < 640 ? 48 : 72;
+                const cardWidth = targetWidth + padding;
+
+                if (isInitialMeasure) {
+                    isInitialMeasure = false;
+                    gsap.set(priceCard, { width: cardWidth });
+                } else {
+                    // Spring-like jiggle transition for width resize
+                    gsap.to(priceCard, {
+                        width: cardWidth,
+                        duration: 0.45,
+                        ease: "back.out(1.3)", // subtle springy snap jiggle
+                        overwrite: "auto"
+                    });
+                }
+            });
+
+            cardResizeObserver.observe(priceCardWrapper);
+
+            // Constants defining the slider range
+            const minCredits = 4000;
+            const maxCredits = 25001;
+
+            // Breakpoints for magnetic dots
+            const breakpoints = [4000, 6000, 7000, 8000, 10000, 12000, 14000, 16000, 18000, 20000, 22000, 25001];
+
+            // Initial state matching 7000 credits ($69.99)
+            let currentValues = {
+                credits: 7000,
+                price: 69.99
+            };
+
+            // Generate Ticks for Wavelength effect
+            const numTicks = 96;
+            const ticks = [];
+            for (let i = 0; i < numTicks; i++) {
+                let tick = document.createElement('div');
+                tick.className = 'w-[2px] bg-[#e2e8f0] rounded-full origin-center pointer-events-none';
+                tick.style.height = '18px'; // Base line height
+                ticksContainer.appendChild(tick);
+                ticks.push(tick);
+            }
+
+            // Generate Magnetic Dots
+            breakpoints.forEach(bp => {
+                let dotProgress = (bp - minCredits) / (maxCredits - minCredits);
+                let dot = document.createElement('div');
+                dot.className = 'absolute top-[38px] w-[3px] h-[3px] rounded-full bg-[#cbd5e1] -ml-[1.5px] transition-transform duration-200';
+                dot.style.left = `${dotProgress * 100}%`;
+                dot.dataset.bp = bp;
+                dotsContainer.appendChild(dot);
+            });
+
+            // Calculate starting progress
+            const initialProgress = (currentValues.credits - minCredits) / (maxCredits - minCredits);
+            let currentProgress = initialProgress;
+            let selectedProgress = initialProgress;
+            let hasClicked = false;
+
+            let sliderProgressObj = { value: initialProgress };
+            let progressTween = null;
+
+            // Initial rendering of price via Calligraph without bounce
+            priceCalligraph.update(currentValues.price.toFixed(2), 1);
+            bubble.textContent = currentValues.credits.toLocaleString();
+
+            let isHovering = false;
+            let isDragging = false;
+
+            // Helper to calculate slider progress [0, 1] from client coordinate
+            function getProgressFromX(clientX) {
+                const rect = track.getBoundingClientRect();
+                let rawX = clientX - rect.left;
+                rawX = Math.max(0, Math.min(rawX, rect.width));
+                return rawX / rect.width;
+            }
+
+            // Render current slider position, bubble state, ticks, and card animations
+            function renderSliderState(progress, immediate = false, isPreview = false) {
+                currentProgress = progress;
+                const rect = track.getBoundingClientRect();
+                const trackWidth = rect.width;
+                const rawX = progress * trackWidth;
+
+                // Snap logic to nearest breakpoint if within threshold
+                let snappedX = rawX;
+                let targetCredits = 0;
+                let isSnapped = false;
+                const magneticRadiusPx = 8; // Smaller snap radius to allow smooth middle sliding on mobile & desktop
+
+                for (let bp of breakpoints) {
+                    let bpProgress = (bp - minCredits) / (maxCredits - minCredits);
+                    let bpX = bpProgress * trackWidth;
+                    if (Math.abs(rawX - bpX) < magneticRadiusPx) {
+                        snappedX = bpX;
+                        targetCredits = bp;
+                        isSnapped = true;
+                        break;
+                    }
+                }
+
+                if (!isSnapped) {
+                    targetCredits = Math.round(minCredits + progress * (maxCredits - minCredits));
+                }
+
+                // If snapped, price has fixed breakpoint values ending in .99 (except last 250.00). 
+                // If in the middle, price changes cents smoothly.
+                let newPrice;
+                if (isSnapped) {
+                    if (targetCredits === 25001) {
+                        newPrice = 250.00;
+                    } else {
+                        newPrice = Math.max(0, (targetCredits / 100) - 0.01);
+                    }
+                } else {
+                    newPrice = Math.max(0, targetCredits / 100);
+                }
+
+                // Update floating bubble and thumb's position
+                gsap.to(bubble, { 
+                    x: snappedX, 
+                    duration: immediate ? 0 : 0.1, 
+                    ease: "power2.out",
+                    overwrite: "auto"
+                });
+                gsap.to(thumb, {
+                    x: snappedX,
+                    duration: immediate ? 0 : 0.1,
+                    ease: "power2.out",
+                    overwrite: "auto"
+                });
+                bubble.textContent = targetCredits.toLocaleString();
+
+                // Style the bubble based on preview vs selection state
+                if (hasClicked && !isPreview) {
+                    bubble.classList.add('bubble-selected');
+                } else {
+                    bubble.classList.remove('bubble-selected');
+                }
+
+                // Update the price and trigger the Calligraph spin
+                if (currentValues.credits !== targetCredits) {
+                    const isIncreasing = targetCredits > currentValues.credits;
+                    currentValues.credits = targetCredits;
+                    currentValues.price = newPrice;
+
+                    // Update Calligraph slots
+                    priceCalligraph.update(newPrice.toFixed(2), isIncreasing ? 1 : -1);
+
+                    // Mechanical snapping bounce (strengthened slightly)
+                    if (!immediate) {
+                        gsap.fromTo(priceCardWrapper, 
+                            { y: isIncreasing ? -5.5 : 5.5 }, 
+                            { y: 0, duration: 0.26, ease: "back.out(3.5)", clearProps: "y" }
+                        );
+                    }
+                }
+
+                // Render Wavelength Tick Scaling
+                const tickIndex = Math.round(progress * (numTicks - 1));
+                const hasTickChanged = tickIndex !== lastTickIndex;
+
+                if (hasTickChanged) {
+                    if ((isHovering || isDragging) && !isMuted && audioCtx && audioCtx.state === 'running') {
+                        const now = Date.now();
+                        const crossedBoundary = Math.floor(tickIndex / 3) !== Math.floor(lastTickIndex / 3);
+                        if (crossedBoundary && now - lastTickSoundTime >= 100) {
+                            const jitter = (Math.random() - 0.5) * 100; // ±50Hz pitch jitter
+                            playTick(1600 + jitter, 0.035, 0.008); // Subtle, dry high-pitched tap
+                            lastTickSoundTime = now;
+                        }
+                    }
+                    lastTickIndex = tickIndex;
+                }
+
+                ticks.forEach(tick => {
+                    let scale = 1;
+                    let activeColor = '#e2e8f0';
+
+                    // Only show the wavelength wave when active (hovering or dragging)
+                    if (isHovering || isDragging) {
+                        let tickX = tick.offsetLeft + tick.offsetWidth / 2;
+                        let dist = Math.abs(snappedX - tickX);
+                        
+                        let sigma = 18;
+                        let factor = Math.exp(-(dist * dist) / (2 * sigma * sigma));
+                        
+                        scale = 1 + factor * 2.2;
+                        activeColor = factor > 0.4 ? '#6b7280' : '#cbd5e1';
+
+                        if (dist < 8) {
+                            activeColor = '#C85DEE'; 
+                        }
+                    }
+
+                    gsap.to(tick, {
+                        scaleY: scale,
+                        backgroundColor: activeColor,
+                        duration: immediate ? 0 : 0.22,
+                        ease: "back.out(2.5)", // Subtle springy wave ripple
+                        overwrite: "auto"
+                    });
+                });
+
+                // Update Magnetic Dots Styling
+                Array.from(dotsContainer.children).forEach(dot => {
+                    let isThisDotActive = (isHovering || isDragging) && isSnapped && parseInt(dot.dataset.bp) === targetCredits;
+                    gsap.to(dot, {
+                        scale: isThisDotActive ? 1.5 : 1,
+                        backgroundColor: isThisDotActive ? '#C85DEE' : '#cbd5e1',
+                        duration: 0.15
+                    });
+                });
+
+                // Update Slider Thumb Styling on Hover/Drag
+                gsap.to(thumb, {
+                    scale: (isHovering || isDragging) ? 1.35 : 1,
+                    borderColor: (isHovering || isDragging) ? '#C85DEE' : '#cbd5e1',
+                    duration: 0.15
+                });
+            }
+
+            // Native pointer event logic for mobile/desktop hybrid responsiveness
+            const handlePointerDown = (e) => {
+                const progress = getProgressFromX(e.clientX);
+
+                // Calculate what credits this click corresponds to
+                const rect = track.getBoundingClientRect();
+                const trackWidth = rect.width;
+                const rawX = progress * trackWidth;
+                let snappedX = rawX;
+                let clickedCredits = 0;
+                let isSnapped = false;
+                const magneticRadiusPx = 8;
+
+                for (let bp of breakpoints) {
+                    let bpProgress = (bp - minCredits) / (maxCredits - minCredits);
+                    let bpX = bpProgress * trackWidth;
+                    if (Math.abs(rawX - bpX) < magneticRadiusPx) {
+                        snappedX = bpX;
+                        clickedCredits = bp;
+                        isSnapped = true;
+                        break;
+                    }
+                }
+                if (!isSnapped) {
+                    clickedCredits = Math.round(minCredits + progress * (maxCredits - minCredits));
+                }
+
+                // If they click on the already selected credits, toggle it off
+                if (hasClicked && clickedCredits === currentValues.credits) {
+                    hasClicked = false;
+                    selectedProgress = progress;
+                    isDragging = false;
+
+                    // Hide the bubble
+                    gsap.to(bubble, { autoAlpha: 0, scale: 0.9, duration: 0.2, ease: "power2.in" });
+
+                    // Reset ticks
+                    ticks.forEach(tick => {
+                        gsap.to(tick, {
+                            scaleY: 1,
+                            backgroundColor: '#e2e8f0',
+                            duration: 0.4,
+                            ease: "power2.out",
+                            overwrite: "auto"
+                        });
+                    });
+
+                    // Reset dots
+                    Array.from(dotsContainer.children).forEach(dot => {
+                        gsap.to(dot, {
+                            scale: 1,
+                            backgroundColor: '#cbd5e1',
+                            duration: 0.3
+                        });
+                    });
+
+                    // Reset thumb
+                    gsap.to(thumb, {
+                        scale: 1,
+                        borderColor: '#cbd5e1',
+                        duration: 0.3
+                    });
+
+                    unlockAudioContext();
+                    if (!isMuted && typeof playTick === 'function') {
+                        if (audioCtx && audioCtx.state === 'running') {
+                            playTick(800, 0.025, 0.008); // Subtle outside-tap style sound for toggle off
+                        } else if (audioCtx && audioCtx.state === 'suspended') {
+                            audioCtx.resume().then(() => {
+                                playTick(800, 0.025, 0.008);
+                            });
+                        }
+                    }
+                    return;
+                }
+
+                isDragging = true;
+                hasClicked = true;
+                track.setPointerCapture(e.pointerId);
+
+                unlockAudioContext();
+
+                // Play interaction click sound (distinct mechanical latch)
+                if (!isMuted && typeof playTick === 'function') {
+                    if (audioCtx && audioCtx.state === 'running') {
+                        playTick(1100, 0.06, 0.03);
+                    } else if (audioCtx && audioCtx.state === 'suspended') {
+                        audioCtx.resume().then(() => {
+                            playTick(1100, 0.06, 0.03);
+                        });
+                    }
+                }
+
+                if (!isHovering) {
+                    isHovering = true;
+                    gsap.to(bubble, { autoAlpha: 1, scale: 1, duration: 0.25, ease: "back.out(1.5)" });
+                }
+
+                // Tiny mechanical click-in jump on bubble
+                gsap.to(bubble, { scale: 1.1, duration: 0.1, yoyo: true, repeat: 1 });
+                
+                // Add soft blur during interaction
+                priceCardWrapper.classList.add('motion-blur');
+                setTimeout(() => priceCardWrapper.classList.remove('motion-blur'), 150);
+
+                selectedProgress = progress;
+                
+                // Click-to-position with satisfying drag friction jiggle
+                if (progressTween) progressTween.kill();
+                progressTween = gsap.to(sliderProgressObj, {
+                    value: progress,
+                    duration: 0.35,
+                    ease: "back.out(1.8)",
+                    onUpdate: () => {
+                        renderSliderState(sliderProgressObj.value, false, false);
+                    }
+                });
+            };
+
+            const handlePointerMove = (e) => {
+                // Determine coordinate from touch or mouse
+                let clientX = e.clientX ?? (e.touches && e.touches[0].clientX);
+                if (clientX === undefined) return;
+
+                if (!isHovering) {
+                    isHovering = true;
+                    gsap.to(bubble, { autoAlpha: 1, scale: 1, duration: 0.25, ease: "back.out(1.5)" });
+                }
+
+                const targetProgress = getProgressFromX(clientX);
+
+                if (isDragging) {
+                    selectedProgress = targetProgress;
+                    // Drag friction using GSAP jiggle
+                    if (progressTween) progressTween.kill();
+                    progressTween = gsap.to(sliderProgressObj, {
+                        value: targetProgress,
+                        duration: 0.35,
+                        ease: "back.out(1.8)",
+                        onUpdate: () => {
+                            renderSliderState(sliderProgressObj.value, false, false);
+                        }
+                    });
+                } else {
+                    // Normal hover preview: instant update with isPreview = true
+                    if (progressTween) progressTween.kill();
+                    sliderProgressObj.value = targetProgress;
+                    renderSliderState(targetProgress, false, true);
+                }
+            };
+
+            const handlePointerUp = (e) => {
+                if (isDragging) {
+                    track.releasePointerCapture(e.pointerId);
+                    isDragging = false;
+                }
+                
+                isHovering = false;
+                
+                if (hasClicked) {
+                    // Snap back to the selected progress (with selected styling)
+                    if (progressTween) progressTween.kill();
+                    progressTween = gsap.to(sliderProgressObj, {
+                        value: selectedProgress,
+                        duration: 0.35,
+                        ease: "back.out(1.8)",
+                        onUpdate: () => {
+                            renderSliderState(sliderProgressObj.value, false, false);
+                        }
+                    });
+                } else {
+                    // Hide floating bubble
+                    gsap.to(bubble, { autoAlpha: 0, scale: 0.9, duration: 0.2, ease: "power2.in" });
+                }
+
+                // Reset ticks
+                ticks.forEach(tick => {
+                    gsap.to(tick, {
+                        scaleY: 1,
+                        backgroundColor: '#e2e8f0',
+                        duration: 0.4,
+                        ease: "power2.out",
+                        overwrite: "auto"
+                    });
+                });
+
+                // Reset dots
+                Array.from(dotsContainer.children).forEach(dot => {
+                    gsap.to(dot, {
+                        scale: 1,
+                        backgroundColor: '#cbd5e1',
+                        duration: 0.3
+                    });
+                });
+
+                // Reset slider thumb styling
+                gsap.to(thumb, {
+                    scale: 1,
+                    borderColor: '#cbd5e1',
+                    duration: 0.3
+                });
+            };
+
+            // Bind native pointer events
+            track.addEventListener('pointerdown', handlePointerDown);
+            track.addEventListener('pointermove', (e) => {
+                handlePointerMove(e);
+            });
+            track.addEventListener('pointerup', handlePointerUp);
+            track.addEventListener('pointercancel', handlePointerUp);
+
+            // Desktop hover bounds
+            track.addEventListener('pointerenter', () => {
+                isHovering = true;
+                if (progressTween) progressTween.kill();
+                sliderProgressObj.value = currentProgress;
+                renderSliderState(currentProgress, false, !hasClicked);
+                gsap.to(bubble, { autoAlpha: 1, scale: 1, duration: 0.25, ease: "back.out(1.5)" });
+            });
+            track.addEventListener('pointerleave', (e) => {
+                if (!isDragging) {
+                    handlePointerUp(e);
+                }
+            });
+
+            // Play a different subtle click sound when clicking outside the interactive elements
+            window.addEventListener('pointerdown', (e) => {
+                const isInsideTrack = track.contains(e.target) || e.target === track;
+                const isInsideToggle = soundToggle.contains(e.target) || e.target === soundToggle;
+                
+                if (!isInsideTrack && !isInsideToggle) {
+                    unlockAudioContext();
+                    if (!isMuted && typeof playTick === 'function') {
+                        if (audioCtx && audioCtx.state === 'running') {
+                            playTick(800, 0.025, 0.008); // Subtle, dry outside tap
+                        } else if (audioCtx && audioCtx.state === 'suspended') {
+                            audioCtx.resume().then(() => {
+                                playTick(800, 0.025, 0.008);
+                            });
+                        }
+                    }
+                }
+            });
+
+            // Keep positions aligned on window resize events
+            window.addEventListener('resize', () => {
+                renderSliderState(currentProgress, true);
+            });
+
+            // Set initial position layout of bubble on window load
+            setTimeout(() => {
+                renderSliderState(initialProgress, true);
+            }, 60);
+
+            // Author Link GSAP Hover Animation
+            const authorLink = document.getElementById('author-link');
+            if (authorLink) {
+                authorLink.addEventListener('mouseenter', () => {
+                    gsap.to(authorLink, {
+                        scale: 1.1,
+                        y: -1.5,
+                        color: "#C85DEE",
+                        duration: 0.25,
+                        ease: "power2.out"
+                    });
+                });
+                authorLink.addEventListener('mouseleave', () => {
+                    gsap.to(authorLink, {
+                        scale: 1,
+                        y: 0,
+                        color: "#9ca3af",
+                        duration: 0.25,
+                        ease: "power2.out"
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

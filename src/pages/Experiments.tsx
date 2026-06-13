@@ -110,18 +110,41 @@ function ExperimentCard({ experiment, onOpen }: CardProps) {
       <div className="flex-1 flex items-center justify-center relative rounded-2xl bg-secondary/20 border border-border/10 overflow-hidden mb-4 p-4 min-h-[200px]">
         {/* Preview Content */}
         <div ref={previewRef} className="w-full h-full flex items-center justify-center transition-all duration-300">
-          {experiment.id === "02_canvas_waves" ? (
-            // Custom decorative SVG design for the waves experiment
-            <svg viewBox="0 0 200 120" className="w-4/5 h-auto text-foreground/40 opacity-70">
-              <path d="M10,60 Q45,20 90,60 T190,60" fill="none" stroke="currentColor" strokeWidth="1.5" className="animate-pulse" />
-              <path d="M10,60 Q50,90 100,50 T190,60" fill="none" stroke="currentColor" strokeWidth="0.8" opacity="0.4" />
-              <path d="M10,60 Q35,50 80,75 T190,60" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.3" />
-              {/* Particle points */}
-              <circle cx="45" cy="40" r="2" fill="currentColor" opacity="0.6" />
-              <circle cx="90" cy="60" r="1.5" fill="currentColor" />
-              <circle cx="135" cy="70" r="2.5" fill="currentColor" opacity="0.8" />
-              <circle cx="70" cy="55" r="1.2" fill="currentColor" opacity="0.4" />
-              <circle cx="160" cy="45" r="2" fill="currentColor" opacity="0.5" />
+          {experiment.id === "02_interactive_pricing_slider" ? (
+            // Custom decorative SVG design for the pricing slider experiment
+            <svg viewBox="0 0 200 120" className="w-4/5 h-auto text-foreground/50 opacity-75">
+              {/* Pricing card mockup */}
+              <rect x="50" y="15" width="100" height="42" rx="4" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="4 2" opacity="0.4" />
+              {/* Corner Marks */}
+              <line x1="48" y1="15" x2="54" y2="15" stroke="currentColor" strokeWidth="1" opacity="0.4" />
+              <line x1="50" y1="13" x2="50" y2="19" stroke="currentColor" strokeWidth="1" opacity="0.4" />
+              <line x1="146" y1="15" x2="152" y2="15" stroke="currentColor" strokeWidth="1" opacity="0.4" />
+              <line x1="150" y1="13" x2="150" y2="19" stroke="currentColor" strokeWidth="1" opacity="0.4" />
+              <line x1="48" y1="57" x2="54" y2="57" stroke="currentColor" strokeWidth="1" opacity="0.4" />
+              <line x1="50" y1="53" x2="50" y2="59" stroke="currentColor" strokeWidth="1" opacity="0.4" />
+              <line x1="146" y1="57" x2="152" y2="57" stroke="currentColor" strokeWidth="1" opacity="0.4" />
+              <line x1="150" y1="53" x2="150" y2="59" stroke="currentColor" strokeWidth="1" opacity="0.4" />
+
+              {/* Price display text */}
+              <text x="100" y="44" textAnchor="middle" fontFamily="sans-serif" fontSize="22" fontWeight="300" fill="currentColor" letterSpacing="-0.5">$69.99</text>
+              
+              {/* Slider Track line */}
+              <line x1="30" y1="85" x2="170" y2="85" stroke="currentColor" strokeWidth="1.5" opacity="0.2" />
+              
+              {/* Ticks */}
+              <line x1="30" y1="82" x2="30" y2="88" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+              <line x1="65" y1="83" x2="65" y2="87" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+              <line x1="100" y1="82" x2="100" y2="88" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+              <line x1="135" y1="83" x2="135" y2="87" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+              <line x1="170" y1="82" x2="170" y2="88" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+              
+              {/* Floating Bubble */}
+              <rect x="80" y="66" width="40" height="12" rx="6" fill="currentColor" opacity="0.08" />
+              <rect x="80" y="66" width="40" height="12" rx="6" fill="none" stroke="currentColor" strokeWidth="0.8" opacity="0.3" />
+              <text x="100" y="74" textAnchor="middle" fontFamily="sans-serif" fontSize="6.5" fontWeight="600" fill="currentColor" opacity="0.7">7,000</text>
+
+              {/* Slider Handle */}
+              <circle cx="100" cy="85" r="4" fill="white" stroke="currentColor" strokeWidth="1.5" />
             </svg>
           ) : (
             // Image Preview
