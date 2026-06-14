@@ -6,6 +6,7 @@ export interface Experiment {
   path: string;
   image?: string;
   video?: string;
+  newTab?: boolean;
 }
 
 export const experimentsList: Experiment[] = [
@@ -27,11 +28,12 @@ export const experimentsList: Experiment[] = [
   },
   {
     id: "03_card_slider",
-    title: "3d song selector card deck",
+    title: "choose your artist card deck",
     category: "GSAP & WebGL",
-    description: "an immersive 3d perspective song selection card deck featuring Three.js WebGL particle backgrounds, custom GSAP card drag momentum, and audio playback feedback.",
+    description: "an immersive 3d perspective artist selection card deck featuring Three.js WebGL particle backgrounds, custom GSAP card drag momentum, and audio playback feedback.",
     path: "/experiments/03_card_slider/index.html",
-    image: "/placeholder.svg"
+    image: "/placeholder.svg",
+    newTab: true
   }
 ];
 

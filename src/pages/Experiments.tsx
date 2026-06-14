@@ -228,9 +228,16 @@ export default function Experiments() {
   }, []);
 
   const handleOpenExperiment = (exp: Experiment) => {
-    setActiveExperiment(exp);
-    if (audioEngine.isEnabled()) {
-      audioEngine.playSound("success");
+    if (exp.newTab) {
+      window.open(exp.path, '_blank');
+      if (audioEngine.isEnabled()) {
+        audioEngine.playSound("click");
+      }
+    } else {
+      setActiveExperiment(exp);
+      if (audioEngine.isEnabled()) {
+        audioEngine.playSound("success");
+      }
     }
   };
 
