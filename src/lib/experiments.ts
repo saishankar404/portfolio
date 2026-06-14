@@ -24,7 +24,7 @@ export const experimentsList: Experiment[] = [
     category: "interactions",
     description: "a beautiful pricing calculator slider featuring custom physics, numeric rolling tick animations, sound feedback, and a responsive layout.",
     path: "/experiments/02_interactive_pricing_slider/index.html",
-    image: "/placeholder.svg"
+    image: "/assets/experiment_covers/02-cover.png"
   },
   {
     id: "03_card_slider",
@@ -32,7 +32,7 @@ export const experimentsList: Experiment[] = [
     category: "GSAP & WebGL",
     description: "an immersive 3d perspective artist selection card deck featuring Three.js WebGL particle backgrounds, custom GSAP card drag momentum, and audio playback feedback.",
     path: "/experiments/03_card_slider/index.html",
-    image: "/placeholder.svg",
+    image: "/assets/experiment_covers/03-cover.png",
     newTab: true
   }
 ];

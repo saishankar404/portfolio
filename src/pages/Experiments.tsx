@@ -110,77 +110,14 @@ function ExperimentCard({ experiment, onOpen }: CardProps) {
       <div className="flex-1 flex items-center justify-center relative rounded-2xl bg-background border border-border/30 overflow-hidden mb-4 p-4 min-h-[200px]">
         {/* Preview Content */}
         <div ref={previewRef} className="w-full h-full flex items-center justify-center transition-all duration-300">
-          {experiment.id === "02_interactive_pricing_slider" ? (
-            // Custom decorative SVG design for the pricing slider experiment
-            <svg viewBox="0 0 200 120" className="w-4/5 h-auto text-foreground/50 opacity-75">
-              {/* Pricing card mockup */}
-              <rect x="50" y="15" width="100" height="42" rx="4" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="4 2" opacity="0.4" />
-              {/* Corner Marks */}
-              <line x1="48" y1="15" x2="54" y2="15" stroke="currentColor" strokeWidth="1" opacity="0.4" />
-              <line x1="50" y1="13" x2="50" y2="19" stroke="currentColor" strokeWidth="1" opacity="0.4" />
-              <line x1="146" y1="15" x2="152" y2="15" stroke="currentColor" strokeWidth="1" opacity="0.4" />
-              <line x1="150" y1="13" x2="150" y2="19" stroke="currentColor" strokeWidth="1" opacity="0.4" />
-              <line x1="48" y1="57" x2="54" y2="57" stroke="currentColor" strokeWidth="1" opacity="0.4" />
-              <line x1="50" y1="53" x2="50" y2="59" stroke="currentColor" strokeWidth="1" opacity="0.4" />
-              <line x1="146" y1="57" x2="152" y2="57" stroke="currentColor" strokeWidth="1" opacity="0.4" />
-              <line x1="150" y1="53" x2="150" y2="59" stroke="currentColor" strokeWidth="1" opacity="0.4" />
-
-              {/* Price display text */}
-              <text x="100" y="44" textAnchor="middle" fontFamily="sans-serif" fontSize="22" fontWeight="300" fill="currentColor" letterSpacing="-0.5">$69.99</text>
-              
-              {/* Slider Track line */}
-              <line x1="30" y1="85" x2="170" y2="85" stroke="currentColor" strokeWidth="1.5" opacity="0.2" />
-              
-              {/* Ticks */}
-              <line x1="30" y1="82" x2="30" y2="88" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-              <line x1="65" y1="83" x2="65" y2="87" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-              <line x1="100" y1="82" x2="100" y2="88" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-              <line x1="135" y1="83" x2="135" y2="87" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-              <line x1="170" y1="82" x2="170" y2="88" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-              
-              {/* Floating Bubble */}
-              <rect x="80" y="66" width="40" height="12" rx="6" fill="currentColor" opacity="0.08" />
-              <rect x="80" y="66" width="40" height="12" rx="6" fill="none" stroke="currentColor" strokeWidth="0.8" opacity="0.3" />
-              <text x="100" y="74" textAnchor="middle" fontFamily="sans-serif" fontSize="6.5" fontWeight="600" fill="currentColor" opacity="0.7">7,000</text>
-
-              {/* Slider Handle */}
-              <circle cx="100" cy="85" r="4" fill="white" stroke="currentColor" strokeWidth="1.5" />
-            </svg>
-          ) : experiment.id === "03_card_slider" ? (
-            // Custom decorative SVG design for the 3D card slider deck experiment
-            <svg viewBox="0 0 200 120" className="w-4/5 h-auto text-foreground/50 opacity-75">
-              {/* Perspective deck stack */}
-              {/* Back Card (small, rotated) */}
-              <rect x="80" y="14" width="40" height="56" rx="5" fill="none" stroke="currentColor" strokeWidth="0.8" transform="rotate(-8 100 42)" opacity="0.15" />
-              
-              {/* Middle Card (rotated opposite) */}
-              <rect x="78" y="18" width="44" height="62" rx="6" fill="none" stroke="currentColor" strokeWidth="1" transform="rotate(5 100 49)" opacity="0.3" />
-              
-              {/* Front Card (Active Focus) */}
-              <g transform="translate(0, 4)">
-                <rect x="75" y="20" width="50" height="70" rx="7" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.8" />
-                {/* Album cover mockup box inside card */}
-                <rect x="80" y="25" width="40" height="35" rx="3" fill="currentColor" opacity="0.06" />
-                <rect x="80" y="25" width="40" height="35" rx="3" fill="none" stroke="currentColor" strokeWidth="0.8" opacity="0.3" />
-                {/* Text lines simulating song title */}
-                <line x1="85" y1="67" x2="115" y2="67" stroke="currentColor" strokeWidth="1.2" opacity="0.7" />
-                <line x1="85" y1="72" x2="105" y2="72" stroke="currentColor" strokeWidth="0.8" opacity="0.4" />
-                <line x1="85" y1="77" x2="110" y2="77" stroke="currentColor" strokeWidth="0.8" opacity="0.4" />
-                {/* Play triangle inside album cover */}
-                <polygon points="97,38 103,42 97,46" fill="currentColor" opacity="0.5" />
-              </g>
-            </svg>
-          ) : (
-            // Image Preview
-            <img
-              src={experiment.image}
-              alt={experiment.title}
-              className="object-cover max-h-[160px] max-w-full rounded-lg"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
-              }}
-            />
-          )}
+          <img
+            src={experiment.image}
+            alt={experiment.title}
+            className="object-cover max-h-[160px] max-w-full rounded-lg"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
+            }}
+          />
         </div>
 
         {/* Hover Overlay */}
