@@ -24,7 +24,15 @@ export const experimentsList: Experiment[] = [
     description: "a beautiful pricing calculator slider featuring custom physics, numeric rolling tick animations, sound feedback, and a responsive layout.",
     path: "/experiments/02_interactive_pricing_slider/index.html",
     image: "/placeholder.svg"
+  },
+  {
+    id: "03_card_slider",
+    title: "3d song selector card deck",
+    category: "GSAP & WebGL",
+    description: "an immersive 3d perspective song selection card deck featuring Three.js WebGL particle backgrounds, custom GSAP card drag momentum, and audio playback feedback.",
+    path: "/experiments/03_card_slider/index.html",
+    image: "/placeholder.svg"
   }
 ];
 
-export const experimentCategories = ["all", "GSAP", "canvas"];
+export const experimentCategories = ["all", "GSAP", "canvas", "interactions", "WebGL"];

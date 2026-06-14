@@ -104,10 +104,10 @@ function ExperimentCard({ experiment, onOpen }: CardProps) {
     <div
       ref={cardRef}
       onClick={onOpen}
-      className="experiment-card cursor-pointer group flex flex-col justify-between bg-muted/20 border border-border/40 rounded-3xl p-5 overflow-hidden transition-all duration-300 min-h-[360px] relative"
+      className="experiment-card cursor-pointer group flex flex-col justify-between bg-[#f1f1f3] dark:bg-[#1c1c1e] border border-border/40 rounded-3xl p-5 overflow-hidden transition-all duration-300 min-h-[360px] relative"
     >
       {/* Main Preview */}
-      <div className="flex-1 flex items-center justify-center relative rounded-2xl bg-secondary/20 border border-border/10 overflow-hidden mb-4 p-4 min-h-[200px]">
+      <div className="flex-1 flex items-center justify-center relative rounded-2xl bg-background border border-border/30 overflow-hidden mb-4 p-4 min-h-[200px]">
         {/* Preview Content */}
         <div ref={previewRef} className="w-full h-full flex items-center justify-center transition-all duration-300">
           {experiment.id === "02_interactive_pricing_slider" ? (
@@ -145,6 +145,30 @@ function ExperimentCard({ experiment, onOpen }: CardProps) {
 
               {/* Slider Handle */}
               <circle cx="100" cy="85" r="4" fill="white" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          ) : experiment.id === "03_card_slider" ? (
+            // Custom decorative SVG design for the 3D card slider deck experiment
+            <svg viewBox="0 0 200 120" className="w-4/5 h-auto text-foreground/50 opacity-75">
+              {/* Perspective deck stack */}
+              {/* Back Card (small, rotated) */}
+              <rect x="80" y="14" width="40" height="56" rx="5" fill="none" stroke="currentColor" strokeWidth="0.8" transform="rotate(-8 100 42)" opacity="0.15" />
+              
+              {/* Middle Card (rotated opposite) */}
+              <rect x="78" y="18" width="44" height="62" rx="6" fill="none" stroke="currentColor" strokeWidth="1" transform="rotate(5 100 49)" opacity="0.3" />
+              
+              {/* Front Card (Active Focus) */}
+              <g transform="translate(0, 4)">
+                <rect x="75" y="20" width="50" height="70" rx="7" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.8" />
+                {/* Album cover mockup box inside card */}
+                <rect x="80" y="25" width="40" height="35" rx="3" fill="currentColor" opacity="0.06" />
+                <rect x="80" y="25" width="40" height="35" rx="3" fill="none" stroke="currentColor" strokeWidth="0.8" opacity="0.3" />
+                {/* Text lines simulating song title */}
+                <line x1="85" y1="67" x2="115" y2="67" stroke="currentColor" strokeWidth="1.2" opacity="0.7" />
+                <line x1="85" y1="72" x2="105" y2="72" stroke="currentColor" strokeWidth="0.8" opacity="0.4" />
+                <line x1="85" y1="77" x2="110" y2="77" stroke="currentColor" strokeWidth="0.8" opacity="0.4" />
+                {/* Play triangle inside album cover */}
+                <polygon points="97,38 103,42 97,46" fill="currentColor" opacity="0.5" />
+              </g>
             </svg>
           ) : (
             // Image Preview
@@ -251,53 +275,51 @@ export default function Experiments() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-background/60 backdrop-blur-md flex flex-col p-4 sm:p-6 md:p-8"
           >
-            {/* Modal Navigation Header (No Shadow) */}
-            <motion.div 
-              initial={{ y: -10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="flex justify-between items-center bg-background/80 border border-border/30 rounded-2xl px-5 py-3 mb-4 backdrop-blur-md"
-            >
-              <div className="flex items-center gap-3">
-                <h2 className="text-xs sm:text-sm font-semibold text-foreground text-lowercase">
-                  {activeExperiment.title}
-                </h2>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <a 
-                  href={activeExperiment.path} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="p-1.5 hover:bg-muted/40 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
-                  title="Open in new window"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </a>
-                <button
-                  onClick={handleCloseExperiment}
-                  className="p-1.5 hover:bg-muted/40 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
-                  title="Close preview"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Main Preview Container (No Shadow) */}
+            {/* Cohesive Window Container (No Shadow) */}
             <motion.div 
               initial={{ scale: 0.97, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.15, type: "spring", stiffness: 100, damping: 20 }}
-              className="flex-1 bg-background border border-border/30 rounded-3xl overflow-hidden relative"
+              transition={{ delay: 0.1, type: "spring", stiffness: 100, damping: 20 }}
+              className="flex-1 flex flex-col bg-background border border-border/40 rounded-3xl overflow-hidden relative"
             >
-              <iframe
-                src={activeExperiment.path}
-                title={activeExperiment.title}
-                className="w-full h-full border-none"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                sandbox="allow-scripts allow-same-origin allow-popups"
-              />
+              {/* Header (Top-left & Top-right rounded only, distinct color background) */}
+              <div className="flex justify-between items-center bg-[#f1f1f3] dark:bg-[#1c1c1e] border-b border-border/60 px-5 py-3 select-none">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-xs sm:text-sm font-semibold text-foreground text-lowercase">
+                    {activeExperiment.title}
+                  </h2>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <a 
+                    href={activeExperiment.path} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-1.5 hover:bg-muted/60 dark:hover:bg-muted/20 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                    title="Open in new window"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                  <button
+                    onClick={handleCloseExperiment}
+                    className="p-1.5 hover:bg-muted/60 dark:hover:bg-muted/20 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                    title="Close preview"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Iframe View (Bottom-left & Bottom-right rounded only) */}
+              <div className="flex-1 w-full h-full relative">
+                <iframe
+                  src={activeExperiment.path}
+                  title={activeExperiment.title}
+                  className="w-full h-full border-none"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  sandbox="allow-scripts allow-same-origin allow-popups"
+                />
+              </div>
             </motion.div>
           </motion.div>
         )}

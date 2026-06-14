@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Choose Your Song - Mobile Stack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Draggable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@hiseb/confetti@2.1.0/dist/confetti.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/dynamic-bg.js"></script>
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --text-primary: #ffffff;
+    --text-muted: #88888b;
+    --green: #1DB954;
+    --green-dark: #168f40;
+    --radius-card: 26px;
+    --card-w: min(76vw, 360px);
+    --card-h: min(105vw, 480px);
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body, html {
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: 'Figtree', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  #scene {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    perspective: 1200px;
+  }
+
+  /* ── HEADER ── */
+  #header {
+    position: absolute;
+    top: 4.5vh;
+    left: 0;
+    right: 0;
+    text-align: center;
+    z-index: 10;
+  }
+
+  #header .eyebrow {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  #header h1 {
+    font-family: 'Figtree', sans-serif;
+    font-style: normal;
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+
+  /* ── CENTER SLOT (3D Receptacle) ── */
+  #center-slot {
+    position: absolute;
+    top: 52%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(var(--card-w) * 0.98);
+    height: calc(var(--card-h) * 0.98);
+    border-radius: var(--radius-card);
+    background: rgba(8, 8, 10, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow:
+      inset 0 10px 30px rgba(0, 0, 0, 0.8),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.02),
+      0 20px 40px rgba(0, 0, 0, 0.5);
+    z-index: 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: box-shadow 0.4s ease;
+  }
+
+  .slot-logo {
+    width: 48px;
+    height: 48px;
+    fill: rgba(255, 255, 255, 0.05);
+  }
+
+  /* ── CARDS DECK ── */
+  #deck {
+    position: absolute;
+    top: 52%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--card-w);
+    height: var(--card-h);
+    transform-style: preserve-3d;
+    pointer-events: none; 
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border-radius: var(--radius-card);
+    cursor: grab; 
+    transform-origin: center center;
+    overflow: hidden;
+    will-change: transform, opacity;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55), inset 0 1px 1px rgba(255,255,255,0.18);
+    pointer-events: auto; 
+    opacity: 0; /* Hide initially to prevent flash on reload */
+  }
+  
+  .card:active { cursor: grabbing; }
+
+  .card-inner {
+    width: 100%; height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 32px 28px;
+    background: #111;
+  }
+
+  .noise-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    z-index: 10;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ── BOTTOM ACTIONS ── */
+  #bottom-bar {
+    position: absolute;
+    bottom: 4vh; /* Fallback */
+    bottom: max(3.5dvh, env(safe-area-inset-bottom, 16px));
+    left: 0; right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    z-index: 20;
+  }
+
+  #swipe-hint {
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    opacity: 0.75;
+    font-weight: 400;
+  }
+
+  /* FIXED BUTTON: Solid white, no glassmorphism */
+  #cta-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    border: none;
+    border-radius: 50px;
+    color: #000000;
+    font-family: 'Figtree', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.2s;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    -webkit-user-select: none;
+  }
+
+  #cta-btn:hover { 
+    transform: scale(1.025); 
+    box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+  }
+  #cta-btn:active { 
+    transform: scale(0.965); 
+  }
+
+  #btn-progress {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 100%;
+    background: var(--green);
+    transform-origin: left center;
+    transform: scaleX(0);
+    z-index: 0;
+  }
+
+  #btn-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .spotify-icon {
+    width: 22px; height: 22px;
+    fill: var(--green);
+  }
+
+  #fx-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 15;
+    overflow: hidden;
+  }
+
+  /* Drag velocity indicator dots */
+  #nav-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+  
+  .nav-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    transition: background 0.3s, transform 0.3s, width 0.3s;
+  }
+  
+  .nav-dot.active {
+    background: rgba(255,255,255,0.9);
+    width: 18px;
+    border-radius: 3px;
+  }
+
+  /* ── CUSTOM CARD LAYOUT ── */
+  .card-custom-layout {
+    border-radius: var(--card-custom-radius, 37px) !important;
+    box-shadow: var(--card-custom-shadow, 0 24px 60px rgba(0,0,0,0.4)) !important;
+  }
+  
+  .card-custom-layout .card-inner {
+    background: var(--card-custom-bg) !important;
+    color: var(--card-custom-text) !important;
+    border-radius: var(--card-custom-radius, 37px) !important;
+    padding: 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    height: 100% !important;
+  }
+
+  .card-custom-layout .image-wrap {
+    width: 100%;
+    aspect-ratio: 1.05 / 1;
+    border-radius: 28px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .card-custom-layout .image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .card-custom-layout .content-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    margin-top: auto;
+    padding-bottom: 14px;
+  }
+
+  .card-custom-layout .artist-name {
+    font-family: 'Figtree', sans-serif;
+    font-size: clamp(34px, 4.8vw, 46px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--card-custom-text);
+  }
+
+  .card-custom-layout .visualizer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 52px;
+    width: 100%;
+  }
+
+  .card-custom-layout .tick {
+    width: 1.6%;
+    height: 100%;
+    background-color: var(--card-custom-tick);
+    border-radius: 3px;
+    transform-origin: bottom center;
+    will-change: transform;
+  }
+
+  /* FLIP Text Morphing styling */
+  .char-span {
+    display: inline-block;
+    will-change: transform, opacity;
+  }
+  .space-span {
+    white-space: pre;
+  }
+  
+  /* ── ACTIONS & MUTE WRAPPER ── */
+  .actions-wrapper {
+    position: relative;
+    width: 248px;
+    height: 58px;
+    z-index: 21;
+  }
+
+  #mute-btn {
+    position: absolute;
+    left: calc(100% + 14px);
+    top: 0;
+    width: 58px;
+    height: 58px;
+    background: #ffffff;
+    border: none;
+    border-radius: 50%;
+    color: #000000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.2s;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    -webkit-user-select: none;
+    outline: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    #mute-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+    }
+  }
+
+  #mute-btn:active {
+    transform: scale(0.95);
+  }
+
+  #mute-btn svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+    transition: transform 0.2s;
+  }
+
+  /* ── BRANDING LABEL ── */
+  #built-by-sai {
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+    letter-spacing: 0.03em;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 4px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* ── PRELOADER ── */
+  #preloader {
+    position: fixed;
+    inset: 0;
+    background: #0d0d0f;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .preloader-content {
+    width: 200px;
+  }
+
+  .preloader-progress-container {
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .preloader-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: #1DB954;
+    box-shadow: 0 0 8px rgba(29, 185, 84, 0.5);
+  }
+</style>
+</head>
+<body>
+
+<div id="preloader">
+  <div class="preloader-content">
+    <div class="preloader-progress-container">
+      <div class="preloader-progress-bar"></div>
+    </div>
+  </div>
+</div>
+
+<div id="scene" style="opacity: 0; pointer-events: none;">
+  <div class="noise-overlay"></div>
+
+  <div id="header">
+    <p class="eyebrow">Psychedelic Pop</p>
+    <h1>Retro Synth Waves</h1>
+  </div>
+
+  <div id="center-slot">
+    <svg class="slot-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+    </svg>
+  </div>
+
+  <div id="deck"></div>
+  <div id="fx-container"></div>
+
+  <div id="bottom-bar">
+    <div id="nav-dots"></div>
+    <div id="swipe-hint">← Throw card to pop · Hold button to select →</div>
+    <div class="actions-wrapper">
+      <button id="cta-btn">
+        <div id="btn-progress"></div>
+        <div id="btn-content">
+          <svg class="spotify-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+          </svg>
+          <span id="btn-text">Hold to Connect</span>
+        </div>
+      </button>
+      
+      <button id="mute-btn" aria-label="Mute or unmute music">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+        </svg>
+      </button>
+    </div>
+    <div id="built-by-sai">built by @sai</div>
+  </div>
+</div>
+
+<script>
+// Redirect back to desktop if width is 768px or wider
+if (window.innerWidth >= 768) {
+  window.location.href = "index.html";
+}
+window.addEventListener('resize', () => {
+  if (window.innerWidth >= 768) {
+    window.location.href = "index.html";
+  }
+});
+
+gsap.registerPlugin(Draggable);
+
+/* ─────────────────────────────────────────
+   ARTIST DATA
+───────────────────────────────────────── */
+const ARTISTS = [
+  {
+    name: "Frank Ocean",
+    genre: "R&B / Soul",
+    vibe: "Atmospheric Nostalgia",
+    customLayout: true,
+    colors: { bg: "#C8AFF4", text: "#583097", tick: "#8964C2", radius: "37px", shadow: "0 24px 60px rgba(88, 48, 151, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.45)" },
+    image: "images/frank_ocean.jpg",
+    audio: "audio/Lost (Frank Ocean)-compressed.mp3"
+  },
+  {
+    name: "Joji",
+    genre: "Alternative R&B",
+    vibe: "Melancholic Lo-Fi",
+    customLayout: true,
+    colors: { bg: "#CC2226", text: "#EFE3D7", tick: "#EFE3D7", radius: "37px", shadow: "0 24px 60px rgba(204, 34, 38, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.3)" },
+    image: "images/joji.jpg",
+    audio: "audio/Joji - LOVE YOU LESS.mp3"
+  },
+  {
+    name: "Jake Isaac",
+    genre: "Soul",
+    vibe: "Raw Acoustic Power",
+    customLayout: true,
+    colors: { bg: "#E6DDD0", text: "#817569", tick: "#997272", radius: "37px", shadow: "0 24px 60px rgba(129, 117, 105, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.45)" },
+    image: "images/jake_isaac.jpeg",
+    audio: "audio/Thinkin' Bout You.mp3"
+  },
+  {
+    name: "Cigarettes\nAfter Sex",
+    genre: "Dream Pop",
+    vibe: "Slow Motion Reverb",
+    customLayout: true,
+    colors: { bg: "#2F3F40", text: "#D7DCE2", tick: "#FAFBFD", radius: "37px", shadow: "0 24px 60px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.12)" },
+    image: "images/cigs_after_sx.jpg",
+    audio: "audio/heavenly-cigs_after_sx.mp3"
+  },
+  {
+    name: "Tame Impala",
+    genre: "Psychedelic Pop",
+    vibe: "Retro Synth Waves",
+    customLayout: true,
+    colors: { bg: "#7EB9FE", text: "#F2E4F2", tick: "#F8DDFB", radius: "37px", shadow: "0 24px 60px rgba(126, 185, 254, 0.22), inset 0 1px 1px rgba(255, 255, 255, 0.4)" },
+    image: "images/tame_impala.webp",
+    audio: "audio/Tame Impala - The Less I Know The Better.mp3"
+  },
+  {
+    name: "Sampha",
+    genre: "Neo Soul",
+    vibe: "Warm Piano & Poetry",
+    customLayout: true,
+    colors: { bg: "#A85656", text: "#FFE29C", tick: "#FFD46C", radius: "37px", shadow: "0 24px 60px rgba(168, 86, 86, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.25)" },
+    image: "images/sampha.webp",
+    audio: "audio/sampha - too much.mp3"
+  },
+  {
+    name: "Rex Orange\nCounty",
+    genre: "Indie Pop",
+    vibe: "Sunny Bedroom Beats",
+    customLayout: true,
+    colors: { bg: "#81924B", text: "#40531C", tick: "#606E47", radius: "37px", shadow: "0 24px 60px rgba(64, 83, 28, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.35)" },
+    image: "images/rex_orange_country.jpg",
+    audio: "audio/pluto_projector.mp3"
+  }
+];
+
+/* ─────────────────────────────────────────
+   STATE
+───────────────────────────────────────── */
+let currentIndex = 0; 
+let isLocked = false;
+let isAnimating = false;
+let lastActiveIndex = 0;
+const cards = [];
+const waveTweens = {}; 
+
+function morphText(element, newText) {
+  if (!element) return;
+
+  // Clean up whitespace or linebreaks
+  newText = newText.replace(/\n/g, ' ');
+
+  // Get the true starting text (either the active morph's target, or the current text)
+  const startingText = (element._morphTargetText || element.textContent).replace(/\n/g, ' ');
+
+  // If target text matches the new text, return early to let active transitions complete
+  if (startingText === newText) return;
+
+  // Track the target text on the element to avoid reading garbled intermediate HTML
+  element._morphTargetText = newText;
+
+  // Cancel any active cleanup timer
+  if (element._morphTween) {
+    element._morphTween.kill();
+    element._morphTween = null;
+  }
+  // Cancel any active transitions on existing character spans inside this element
+  const activeSpans = element.querySelectorAll('.char-span');
+  if (activeSpans.length > 0) {
+    gsap.killTweensOf(activeSpans);
+  }
+
+  // Instantly restore natural layout styles for accurate measurement
+  element.style.width = '';
+  element.style.height = '';
+  element.style.position = '';
+
+  // 1. Force starting text to be rendered as normal inline-block spans for clean bounding box measurement
+  element.innerHTML = startingText.split('').map(char => {
+    if (char === ' ') return `<span class="char-span space-span">&nbsp;</span>`;
+    return `<span class="char-span">${char}</span>`;
+  }).join('');
+  
+  const oldSpans = Array.from(element.querySelectorAll('.char-span'));
+
+  // Measure initial layout bounding boxes relative to parent element
+  const parentRect = element.getBoundingClientRect();
+  const oldData = oldSpans.map(span => {
+    const rect = span.getBoundingClientRect();
+    return {
+      char: span.textContent === '\xa0' ? ' ' : span.textContent,
+      left: rect.left - parentRect.left,
+      width: rect.width,
+      element: span
+    };
+  });
+
+  // 2. Set new text and wrap to measure target layout
+  element.innerHTML = newText.split('').map(char => {
+    if (char === ' ') return `<span class="char-span space-span">&nbsp;</span>`;
+    return `<span class="char-span">${char}</span>`;
+  }).join('');
+  
+  const newSpans = Array.from(element.querySelectorAll('.char-span'));
+  const newParentRect = element.getBoundingClientRect();
+  const newData = newSpans.map(span => {
+    const rect = span.getBoundingClientRect();
+    return {
+      char: span.textContent === '\xa0' ? ' ' : span.textContent,
+      left: rect.left - newParentRect.left,
+      width: rect.width,
+      element: span
+    };
+  });
+
+  // Temporarily transition to relative layout to lock widths & heights (prevent collapse/shift)
+  element.style.width = `${newParentRect.width}px`;
+  element.style.height = `${newParentRect.height}px`;
+  element.style.position = 'relative';
+  element.innerHTML = '';
+
+  // Calculate horizontal parent container alignment shift to prevent absolute layout jumps
+  const shiftX = parentRect.left - newParentRect.left;
+
+  // Character mapping
+  const matchedOld = new Set();
+  const matchedNew = new Set();
+  const animations = [];
+
+  // Match common characters
+  newData.forEach((nItem, nIdx) => {
+    let bestMatch = null;
+    let minDistance = Infinity;
+
+    oldData.forEach((oItem, oIdx) => {
+      if (!matchedOld.has(oIdx) && oItem.char === nItem.char && oItem.char !== ' ') {
+        const dist = Math.abs(oIdx - nIdx);
+        // Distance constraint <= 3 limits letters flying across the screen, keeping it unscrambled
+        if (dist <= 3 && dist < minDistance) {
+          minDistance = dist;
+          bestMatch = { item: oItem, index: oIdx };
+        }
+      }
+    });
+
+    if (bestMatch) {
+      matchedOld.add(bestMatch.index);
+      matchedNew.add(nIdx);
+      animations.push({
+        type: 'move',
+        char: nItem.char,
+        fromLeft: bestMatch.item.left + shiftX,
+        toLeft: nItem.left,
+        element: bestMatch.item.element
+      });
+    }
+  });
+
+  // Old characters fade/slide out
+  oldData.forEach((oItem, oIdx) => {
+    if (!matchedOld.has(oIdx) && oItem.char !== ' ') {
+      animations.push({
+        type: 'exit',
+        char: oItem.char,
+        fromLeft: oItem.left + shiftX,
+        element: oItem.element
+      });
+    }
+  });
+
+  // New characters fade/bounce in
+  newData.forEach((nItem, nIdx) => {
+    if (!matchedNew.has(nIdx) && nItem.char !== ' ') {
+      const span = document.createElement('span');
+      span.className = 'char-span';
+      span.textContent = nItem.char;
+      animations.push({
+        type: 'enter',
+        char: nItem.char,
+        toLeft: nItem.left,
+        element: span
+      });
+    }
+  });
+
+  // Spaces positioned properly
+  newData.forEach((nItem, nIdx) => {
+    if (nItem.char === ' ') {
+      const span = document.createElement('span');
+      span.className = 'char-span space-span';
+      span.innerHTML = '&nbsp;';
+      animations.push({
+        type: 'space',
+        toLeft: nItem.left,
+        element: span
+      });
+    }
+  });
+
+  // Run GSAP transitions
+  animations.forEach(anim => {
+    const el = anim.element;
+    el.style.position = 'absolute';
+    el.style.left = '0';
+    el.style.top = '0';
+    element.appendChild(el);
+
+    if (anim.type === 'move') {
+      gsap.fromTo(el,
+        { x: anim.fromLeft, opacity: 1, scale: 1 },
+        {
+          x: anim.toLeft,
+          opacity: 1,
+          scale: 1,
+          duration: 0.6,
+          ease: "power3.out"
+        }
+      );
+    } else if (anim.type === 'exit') {
+      gsap.fromTo(el,
+        { x: anim.fromLeft, opacity: 1, scale: 1 },
+        {
+          x: anim.fromLeft,
+          opacity: 0,
+          scale: 0.85,
+          duration: 0.35,
+          ease: "power2.out",
+          onComplete: () => el.remove()
+        }
+      );
+    } else if (anim.type === 'enter') {
+      gsap.fromTo(el,
+        { x: anim.toLeft, opacity: 0, scale: 0.85 },
+        {
+          x: anim.toLeft,
+          opacity: 1,
+          scale: 1,
+          duration: 0.4,
+          ease: "power2.out",
+          delay: 0.05
+        }
+      );
+    } else if (anim.type === 'space') {
+      gsap.set(el, { x: anim.toLeft });
+    }
+  });
+
+  // Clean up inline layout configurations upon animation completion
+  element._morphTween = gsap.delayedCall(0.65, () => {
+    element.style.width = '';
+    element.style.height = '';
+    element.style.position = '';
+    element.innerHTML = newText.split('').map(char => {
+      if (char === ' ') return `<span class="char-span space-span">&nbsp;</span>`;
+      return `<span class="char-span">${char}</span>`;
+    }).join('');
+    element._morphTween = null;
+  });
+}
+
+
+const deck    = document.getElementById('deck');
+const scene   = document.getElementById('scene');
+const btn     = document.getElementById('cta-btn');
+const btnProg = document.getElementById('btn-progress');
+const btnText = document.getElementById('btn-text');
+const slot    = document.getElementById('center-slot');
+const dotsEl  = document.getElementById('nav-dots');
+
+/* ─────────────────────────────────────────
+   NAV DOTS
+───────────────────────────────────────── */
+ARTISTS.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'nav-dot' + (i === currentIndex ? ' active' : ''); 
+  dotsEl.appendChild(d);
+});
+
+function updateDots(idx) {
+  dotsEl.querySelectorAll('.nav-dot').forEach((d, i) => {
+    d.classList.toggle('active', Math.round(idx) === i);
+  });
+}
+
+/* ─────────────────────────────────────────
+   BUILD CARDS WITH PHYSICAL DRAG
+───────────────────────────────────────── */
+ARTISTS.forEach((artist, i) => {
+  const el = document.createElement('div');
+  el.className = 'card card-custom-layout';
+  el.dataset.index = i;
+
+  // Set CSS Custom Properties for layout styling
+  el.style.setProperty('--card-custom-bg', artist.colors.bg);
+  el.style.setProperty('--card-custom-text', artist.colors.text);
+  el.style.setProperty('--card-custom-tick', artist.colors.tick);
+  el.style.setProperty('--card-custom-radius', artist.colors.radius || '37px');
+  el.style.setProperty('--card-custom-shadow', artist.colors.shadow || 'none');
+  
+  el.innerHTML = `
+    <div class="card-inner">
+      <div class="image-wrap">
+        <img src="${artist.image}" alt="${artist.name.replace('\n', ' ')}" />
+      </div>
+      <div class="content-wrap">
+        <div class="artist-name">${artist.name.replace('\n', '<br>')}</div>
+        <div class="visualizer">
+          ${Array.from({length: 26}, () => '<div class="tick"></div>').join('')}
+        </div>
+      </div>
+    </div>`;
+
+  deck.appendChild(el);
+  cards.push(el);
+
+  // Isolate draggability per card to solve the GSAP transformation conflicts completely
+  Draggable.create(el, {
+    type: "x,y",
+    edgeResistance: 0.65,
+    onPress() {
+      // Reject drags immediately if animation is locked or it's NOT the top card
+      if (isLocked || isAnimating || i !== currentIndex) {
+        this.endDrag();
+        return;
+      }
+      this.update(); // Sync Draggable internal coordinates with GSAP's active position
+      this.target.isDragging = true; // Protects this specific card from the render loop
+    },
+    onDrag() {
+      // Dynamic slight rotation based on drag position makes it feel physical
+      gsap.to(this.target, { rotationZ: this.x * 0.05, duration: 0.1, overwrite: "auto" });
+    },
+    onDragEnd() {
+      if (!this.target.isDragging) return; // Ignore canceled drags
+      this.target.isDragging = false;
+
+      // If thrown fast/far enough, calculate trajectory and execute the pop out
+      if (Math.abs(this.x) > 60 || Math.abs(this.y) > 60) {
+        swipeCardOut(this.target, this.x, this.y);
+      } else {
+        // Did not throw it far enough -> spring gracefully back to original position
+        renderCards();
+      }
+    },
+    onClick() {
+      if (isLocked || isAnimating) return;
+      if (i === currentIndex) {
+        stackNext(); // Safe pop out on direct tap
+      }
+    }
+  });
+});
+
+/* ─────────────────────────────────────────
+   WAVELENGTH VISUALIZER ANIMATION
+───────────────────────────────────────── */
+function initWavelengthAnimation() {
+  const baseScales = [0.3, 0.4, 0.55, 0.75, 0.5, 0.3, 0.4, 0.5, 0.7, 0.8, 0.6, 0.75, 0.85, 0.9, 0.8, 0.6, 0.45, 0.3, 0.5, 0.75, 0.85, 0.9, 0.6, 0.35, 0.5, 0.4];
+  const customCards = document.querySelectorAll('.card-custom-layout');
+  
+  customCards.forEach(card => {
+    const cardIndex = parseInt(card.dataset.index);
+    const ticks = card.querySelectorAll('.tick');
+    waveTweens[cardIndex] = [];
+
+    ticks.forEach((tick, idx) => {
+      const baseVal = baseScales[idx] || 0.5;
+      gsap.set(tick, { scaleY: baseVal });
+      
+      const tween = gsap.fromTo(tick, 
+        { scaleY: Math.max(0.15, baseVal * 0.4) },
+        {
+          scaleY: Math.min(1.0, baseVal * 1.25),
+          duration: 0.45 + Math.random() * 0.45,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: idx * 0.025,
+          paused: true // Performance: start paused so only active card animates
+        }
+      );
+      waveTweens[cardIndex].push(tween);
+    });
+  });
+}
+
+function updateVisualizerState(activeIndex) {
+  Object.keys(waveTweens).forEach(cardIndex => {
+    const idx = parseInt(cardIndex);
+    const isCurrent = idx === activeIndex;
+    const ticks = cards[idx].querySelectorAll('.tick');
+    if (!ticks.length) return;
+    
+    waveTweens[cardIndex].forEach((tween, tickIdx) => {
+      if (!audioController.isMuted && audioUnlocked) {
+        tween.play();
+        tween.timeScale(isCurrent ? 1.0 : 0.25);
+      } else {
+        tween.pause();
+        const baseVal = [0.3, 0.4, 0.55, 0.75, 0.5, 0.3, 0.4, 0.5, 0.7, 0.8, 0.6, 0.75, 0.85, 0.9, 0.8, 0.6, 0.45, 0.3, 0.5, 0.75, 0.85, 0.9, 0.6, 0.35, 0.5, 0.4][tickIdx] || 0.5;
+        gsap.to(tween.targets(), { scaleY: Math.max(0.15, baseVal * 0.4), duration: 0.4, ease: "power2.out", overwrite: "auto" });
+      }
+    });
+  });
+}
+
+/* ─────────────────────────────────────────
+   AUDIO CROSSFADING MANAGER
+───────────────────────────────────────── */
+let audioUnlocked = false;
+
+class AudioController {
+  constructor(artists) {
+    this.artists = artists;
+    this.currentAudio = null;
+    this.currentIndex = -1;
+    this.isMuted = true; // Muted by default to allow autoplay
+    this.maxVolume = 0.3; // not too loud
+  }
+
+  playIndex(index) {
+    if (index === this.currentIndex) return;
+    const artist = this.artists[index];
+    if (!artist || !artist.audio) return;
+
+    const prevAudio = this.currentAudio;
+    const nextAudio = new Audio(artist.audio);
+    nextAudio.loop = true;
+    nextAudio.volume = 0;
+
+    this.currentAudio = nextAudio;
+    this.currentIndex = index;
+
+    // Crossfade: fade out previous audio
+    if (prevAudio) {
+      gsap.to(prevAudio, {
+        volume: 0,
+        duration: 0.5,
+        ease: "power1.inOut",
+        onComplete: () => {
+          prevAudio.pause();
+          prevAudio.src = "";
+        }
+      });
+    }
+
+    // Unlocked play attempt
+    const playPromise = nextAudio.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        // If not muted, fade in to max volume
+        if (!this.isMuted) {
+          gsap.to(nextAudio, {
+            volume: this.maxVolume,
+            duration: 0.5,
+            ease: "power1.inOut"
+          });
+        }
+      }).catch(err => {
+        console.warn("Audio autoplay blocked/failed. Will unlock on unmute:", err);
+      });
+    }
+
+    if (window.updateVisualizerState) {
+      window.updateVisualizerState(index);
+    }
+  }
+
+  toggleMute() {
+    this.isMuted = !this.isMuted;
+    
+    if (this.currentAudio) {
+      if (this.isMuted) {
+        gsap.to(this.currentAudio, {
+          volume: 0,
+          duration: 0.8,
+          ease: "power1.inOut",
+          onComplete: () => {
+            if (this.isMuted && this.currentAudio) {
+              this.currentAudio.pause();
+            }
+          }
+        });
+      } else {
+        if (this.currentAudio.paused) {
+          const playPromise = this.currentAudio.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(err => console.warn("Mute toggle play failed:", err));
+          }
+        }
+        gsap.to(this.currentAudio, {
+          volume: this.maxVolume,
+          duration: 0.8,
+          ease: "power1.inOut"
+        });
+      }
+    } else if (!this.isMuted && this.currentIndex !== -1) {
+      this.playIndex(this.currentIndex);
+    }
+
+    if (window.updateVisualizerState) {
+      window.updateVisualizerState(this.currentIndex);
+    }
+
+    return this.isMuted;
+  }
+}
+
+const audioController = new AudioController(ARTISTS);
+
+/* ─────────────────────────────────────────
+   ASSETS PRELOADER PIPELINE
+───────────────────────────────────────── */
+const assetsToPreload = [
+  // Images
+  "images/tame_impala.webp",
+  "images/sampha.webp",
+  "images/joji.jpg",
+  "images/jake_isaac.jpeg",
+  "images/cigs_after_sx.jpg",
+  "images/rex_orange_country.jpg",
+  "images/frank_ocean.jpg",
+  // Audio
+  "audio/Tame Impala - The Less I Know The Better.mp3",
+  "audio/sampha - too much.mp3",
+  "audio/Joji - LOVE YOU LESS.mp3",
+  "audio/Thinkin' Bout You.mp3",
+  "audio/heavenly-cigs_after_sx.mp3",
+  "audio/pluto_projector.mp3",
+  "audio/Lost (Frank Ocean)-compressed.mp3"
+];
+
+let loadedCount = 0;
+const totalCount = assetsToPreload.length;
+
+function updateProgress() {
+  const percent = Math.round((loadedCount / totalCount) * 100);
+  const progressBar = document.querySelector('.preloader-progress-bar');
+  
+  if (progressBar) {
+    gsap.to(progressBar, {
+      width: percent + '%',
+      duration: 0.4,
+      ease: "power2.out",
+      overwrite: "auto",
+      onComplete: () => {
+        if (loadedCount >= totalCount && percent === 100) {
+          gsap.delayedCall(0.15, startExperience);
+        }
+      }
+    });
+  }
+}
+
+function startExperience() {
+  // Reveal scene
+  const sceneEl = document.getElementById('scene');
+  sceneEl.style.pointerEvents = 'auto';
+  gsap.to(sceneEl, { opacity: 1, duration: 0.6 });
+
+  // Fade out preloader overlay
+  gsap.to('#preloader', {
+    opacity: 0,
+    duration: 0.8,
+    ease: "power2.inOut",
+    onComplete: () => {
+      const preloader = document.getElementById('preloader');
+      if (preloader) preloader.remove();
+    }
+  });
+
+  // Start background
+  if (window.initDynamicBg) {
+    window.initDynamicBg(ARTISTS, currentIndex);
+  }
+
+  // Play initial song (muted by default)
+  audioController.playIndex(currentIndex);
+
+  // Staggered cards entrance animation
+  gsap.from(cards, {
+    y: "120vh",
+    z: -300,
+    rotationZ: 45,
+    rotationX: 20,
+    opacity: 0,
+    duration: 1.4,
+    ease: "power4.out",
+    stagger: { each: 0.08 },
+    delay: 0.15
+  });
+}
+
+// Boot Preloader
+const isLocalFile = (window.location.protocol === "file:");
+if (isLocalFile) {
+  // file:// CORS restrictions prevent audio pre-fetching. Load images via Image, skip audio fetch
+  const imageAssets = assetsToPreload.filter(url => url.startsWith("images/"));
+  let loadedImgs = 0;
+  if (imageAssets.length === 0) {
+    loadedCount = totalCount;
+    updateProgress();
+  } else {
+    imageAssets.forEach(url => {
+      const img = new Image();
+      img.onload = img.onerror = () => {
+        loadedImgs++;
+        loadedCount = Math.round((loadedImgs / imageAssets.length) * totalCount);
+        updateProgress();
+      };
+      img.src = url;
+    });
+  }
+} else {
+  // HTTP/HTTPS: Preload all assets fully via fetch
+  assetsToPreload.forEach(url => {
+    fetch(url)
+      .then(res => {
+        loadedCount++;
+        updateProgress();
+      })
+      .catch(err => {
+        console.warn("Preload failed for:", url, err);
+        loadedCount++; // don't block experience
+        updateProgress();
+      });
+  });
+}
+
+/* ─────────────────────────────────────────
+   RENDER — Mobile Vertical Stack Alignment
+───────────────────────────────────────── */
+function renderCards(instant = false) {
+  // Morph header text on index changes (Torph/Calligraph animation style)
+  if (currentIndex !== lastActiveIndex && currentIndex >= 0 && currentIndex < ARTISTS.length) {
+    const artist = ARTISTS[currentIndex];
+    const h1El = document.querySelector('#header h1');
+    const eyebrowEl = document.querySelector('#header .eyebrow');
+    if (!isLocked) {
+      morphText(h1El, artist.vibe);
+      morphText(eyebrowEl, artist.genre);
+    }
+    lastActiveIndex = currentIndex;
+
+    // Performance: Toggle visualizer status on index change
+    if (window.updateVisualizerState) {
+      window.updateVisualizerState(currentIndex);
+    }
+  }
+
+  cards.forEach((card, i) => {
+    // CRITICAL: Protect the card being physically dragged or thrown from being overwritten by the loop
+    if (card.isThrowing || card.isDragging) return; 
+
+    let diff = (i - currentIndex + ARTISTS.length) % ARTISTS.length;
+    const STACK_DEPTH = 3;
+    
+    // Hide cards pushed deep back into the stack
+    if (diff > STACK_DEPTH && diff < ARTISTS.length - 1) {
+      gsap.set(card, { opacity: 0, zIndex: -1, y: -200 });
+      card.style.pointerEvents = "none";
+      return;
+    }
+
+    if (diff === ARTISTS.length - 1) {
+      card.style.pointerEvents = "none";
+      // Position and hide it at the back of the stack so it's not randomly visible on load
+      gsap.set(card, { x: 0, y: -300, z: -150, scale: 0.8, opacity: 0, rotationX: -30, rotationZ: 0 });
+      return; // Skip the card that just animated away
+    }
+
+    let stackIndex = diff;
+    const y = -stackIndex * 65; 
+    const zPos = -stackIndex * 60;
+    const rotX = -12 - (stackIndex * 2); 
+    const scale = 1 - (stackIndex * 0.05);
+    const zIdx = 100 - stackIndex * 10;
+    const opacity = Math.max(0, 1 - stackIndex * 0.2);
+
+    // Enforce CSS pointer-events strictly so only top card intercepts Draggable physics
+    card.style.pointerEvents = (stackIndex === 0) ? "auto" : "none";
+
+    if (instant) {
+      gsap.set(card, {
+        x: 0,
+        y: y + "px",
+        z: zPos,
+        rotationX: rotX,
+        rotationY: 0,
+        rotationZ: 0,
+        scale: scale,
+        zIndex: zIdx,
+        opacity: opacity
+      });
+    } else {
+      if (stackIndex === 0) {
+        // Smoothly straighten rotationZ to 0 without any tilting/jiggle
+        gsap.to(card, {
+          rotationZ: 0,
+          duration: 0.6,
+          ease: "power2.out",
+          overwrite: "auto"
+        });
+
+        // Elastically bounce translation and scale properties along the alignment axis
+        gsap.to(card, {
+          x: 0,
+          y: y + "px",
+          z: zPos,
+          rotationX: rotX,
+          rotationY: 0,
+          scale: scale,
+          zIndex: zIdx,
+          opacity: opacity,
+          duration: 1.1,
+          ease: "elastic.out(1.15, 0.6)", // Higher elastic distance (1.15) and smooth period (0.6)
+          overwrite: "auto"
+        });
+      } else {
+        gsap.to(card, {
+          x: 0,
+          y: y + "px",
+          z: zPos,
+          rotationX: rotX,
+          rotationY: 0,
+          rotationZ: 0,
+          scale: scale,
+          zIndex: zIdx,
+          opacity: opacity,
+          duration: 0.8,
+          ease: "power2.out",
+          overwrite: "auto"
+        });
+      }
+    }
+  });
+}
+
+/* ─────────────────────────────────────────
+   STACK NAVIGATION (Throwing Mechanics)
+───────────────────────────────────────── */
+function swipeCardOut(card, dirX, dirY) {
+  if (isLocked || isAnimating) return;
+  isAnimating = true;
+  card.isThrowing = true; // Protect from renderCards loop
+  
+  // Kill any running drag/rotation/spring-back tweens immediately
+  gsap.killTweensOf(card);
+  
+  const throwX = dirX * 2;
+  let throwY = dirY * 2;
+  
+  // Guarantee the card clears the screen even if thrown softly
+  if (Math.abs(throwY) < window.innerHeight / 2) {
+      throwY = (throwY >= 0 ? 1 : -1) * window.innerHeight;
+  }
+
+  gsap.to(card, {
+    x: throwX,
+    y: throwY,
+    rotationZ: dirX * 0.1,
+    opacity: 0,
+    duration: 0.35, // Snappier throw duration
+    ease: "power2.out",
+    onComplete: () => {
+      card.isThrowing = false;
+      
+      // Terminate any active throw tweens
+      gsap.killTweensOf(card);
+      
+      // Reset card completely to the back of stack silently
+      gsap.set(card, { x: 0, y: -300, z: -150, scale: 0.8, opacity: 0, rotationX: -30, rotationZ: 0 });
+      
+      // Sync Draggable coordinates with new reset coordinates
+      const drag = Draggable.get(card);
+      if (drag) drag.update();
+      
+      isAnimating = false; // Safely release lock only when card is completely off-screen and reset
+    }
+  });
+
+  currentIndex = (currentIndex + 1) % ARTISTS.length;
+  updateDots(currentIndex);
+  
+  if (typeof audioController !== 'undefined') {
+    audioController.playIndex(currentIndex);
+  }
+
+  if (window.updateDynamicBgMobile) {
+    window.updateDynamicBgMobile(currentIndex);
+  }
+
+  gsap.delayedCall(0.06, () => {
+    renderCards();
+  });
+}
+
+// Fallback pop if clicked directly or via keyboard
+function stackNext() {
+  const topCard = cards[currentIndex];
+  // Simulate a vertical downward throw
+  swipeCardOut(topCard, 0, 150); 
+}
+
+// Initial layout compilation (renders initial stack hidden by preloader overlay)
+initWavelengthAnimation();
+renderCards(true);
+
+/* ─────────────────────────────────────────
+   LONG PRESS → SLOT ANIMATION (Beautiful Chaos)
+───────────────────────────────────────── */
+let holdTimer;
+
+btn.addEventListener('pointerdown', (e) => {
+  if (isLocked || isAnimating) return;
+  gsap.to(btnProg, { scaleX: 1, duration: 0.8, ease: "power1.inOut" });
+  gsap.to(btn, { scale: 0.95, duration: 0.3, ease: "power2.out" });
+
+  // Shake/jiggly effect while holding (intense feedback on mobile)
+  gsap.to(btn, {
+    x: "random(-6, 6)",
+    y: "random(-6, 6)",
+    rotation: "random(-4, 4)",
+    duration: 0.04,
+    repeat: -1,
+    yoyo: true,
+    ease: "none"
+  });
+
+  // Morph header to connecting states
+  const h1El = document.querySelector('#header h1');
+  const eyebrowEl = document.querySelector('#header .eyebrow');
+  morphText(h1El, "Syncing Spotify...");
+  morphText(eyebrowEl, "Connecting...");
+
+  holdTimer = setTimeout(() => {
+    triggerLockAnimation();
+  }, 800);
+});
+
+const cancelHold = () => {
+  if (isLocked) return;
+  clearTimeout(holdTimer);
+  gsap.killTweensOf(btn, "x,y,rotation"); // Stop shake
+  gsap.to(btnProg, { scaleX: 0, duration: 0.3, ease: "power2.out", overwrite: true });
+  gsap.to(btn, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.35, ease: "elastic.out(1, 0.5)" });
+
+  // Restore active artist vibe and genre
+  const h1El = document.querySelector('#header h1');
+  const eyebrowEl = document.querySelector('#header .eyebrow');
+  const artist = ARTISTS[currentIndex];
+  morphText(h1El, artist.vibe);
+  morphText(eyebrowEl, artist.genre);
+};
+
+btn.addEventListener('pointerup',    cancelHold);
+btn.addEventListener('pointerleave', cancelHold);
+
+function triggerLockAnimation() {
+  isLocked = true;
+  const centerCard = cards[currentIndex];
+
+  gsap.killTweensOf(btn, "x,y,rotation"); // Stop shake
+  btnText.innerHTML = "Connected";
+  btnText.style.color = "#000";
+  document.querySelector('.spotify-icon').style.fill = "#000";
+  gsap.to(btn, { x: 0, y: 0, rotation: 0, scale: 1, borderColor: "transparent", duration: 0.4, ease: "back.out(1.5)", boxShadow: "0 4px 10px rgba(0,0,0,0.1)" });
+  
+  // Fade out hints and dots, leaving header to morph
+  gsap.to(['#swipe-hint', '#nav-dots'], { opacity: 0, y: -16, duration: 0.4, ease: "power2.in" });
+
+  // Morph header to success state
+  const h1El = document.querySelector('#header h1');
+  const eyebrowEl = document.querySelector('#header .eyebrow');
+  const artist = ARTISTS[currentIndex];
+  morphText(h1El, `Enjoy ${artist.name.replace('\n', ' ')}!`);
+  morphText(eyebrowEl, "Connected");
+
+  // Elegant, clean staggered drop off-screen for unselected cards
+  cards.forEach((c, i) => {
+    if (i !== currentIndex) {
+      const stackIndex = (i - currentIndex + ARTISTS.length) % ARTISTS.length;
+      const delay = stackIndex * 0.05;
+      
+      gsap.to(c, {
+        y: "100vh",
+        scale: 0.9,
+        rotationX: 0, // Reset tilt for a cleaner drop
+        opacity: 0,
+        duration: 0.8,
+        ease: "power3.in",
+        delay: delay,
+        overwrite: "auto"
+      });
+    }
+  });
+
+  const tl = gsap.timeline();
+
+  tl.to(centerCard, {
+    y: "-4vh",
+    z: 30,
+    scale: 1.05,
+    rotationX: 0, 
+    rotationY: 0, 
+    rotationZ: 0,
+    duration: 0.45,
+    ease: "power2.out"
+  })
+  .to(centerCard, {
+    x: 0,
+    y: "0vh",
+    z: -40,
+    scale: 0.98,
+    rotationX: 0,
+    rotationY: 0,
+    rotationZ: 0,
+    duration: 1.0,
+    ease: "elastic.out(1.1, 0.6)"
+  });
+
+  // Receptacle Visual Reaction
+  gsap.timeline({ delay: 0.45 })
+    .to(slot, {
+      boxShadow: "inset 0 10px 30px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(29,185,84,0.5), 0 0 40px rgba(29,185,84,0.2)",
+      duration: 0.3,
+      ease: "power2.out",
+      onStart: () => {
+        // Trigger subtle confetti centered around the button
+        const rect = btn.getBoundingClientRect();
+        const btnX = rect.left + rect.width / 2;
+        const btnY = rect.top + rect.height / 2;
+        
+        if (typeof confetti === 'function') {
+          confetti({
+            position: { x: btnX, y: btnY },
+            count: 35,
+            size: 1.1,
+            velocity: 150,
+            fade: true
+          });
+        }
+      }
+    })
+    .to(slot, {
+      boxShadow: "inset 0 10px 30px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.03), 0 20px 40px rgba(0,0,0,0.5)",
+      duration: 1.5,
+      ease: "power2.out"
+    });
+}
+
+/* ─────────────────────────────────────────
+   KEYBOARD NAV
+───────────────────────────────────────── */
+window.addEventListener('keydown', (e) => {
+  if (isLocked || isAnimating) return;
+  if (['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', ' '].includes(e.key)) {
+    stackNext();
+  }
+});
+
+/* ─────────────────────────────────────────
+   MUTE / UNMUTE EVENT HANDLER
+───────────────────────────────────────── */
+const muteBtn = document.getElementById('mute-btn');
+if (muteBtn) {
+  muteBtn.addEventListener('click', () => {
+    if (typeof audioController !== 'undefined') {
+      if (audioController.isMuted) {
+        audioUnlocked = true;
+      }
+      const isMuted = audioController.toggleMute();
+      if (isMuted) {
+        muteBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+          </svg>
+        `;
+      } else {
+        muteBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+          </svg>
+        `;
+      }
+    }
+  });
+}
+
+/* ─────────────────────────────────────────
+   BRANDING LABEL HOVER JUMP (GSAP)
+───────────────────────────────────────── */
+const label = document.getElementById('built-by-sai');
+if (label) {
+  label.addEventListener('mouseenter', () => {
+    gsap.killTweensOf(label);
+    gsap.to(label, { y: -5, color: '#82934D', duration: 0.18, ease: "power2.out" });
+  });
+  label.addEventListener('mouseleave', () => {
+    gsap.killTweensOf(label);
+    gsap.to(label, { y: 0, color: 'rgba(255, 255, 255, 0.35)', duration: 0.4, ease: "elastic.out(1.2, 0.5)" });
+  });
+}
+
+// Global failsafe to reset active drag states on interaction end
+window.addEventListener('pointerup', () => {
+  cards.forEach(c => c.isDragging = false);
+});
+window.addEventListener('pointercancel', () => {
+  cards.forEach(c => c.isDragging = false);
+});
+</script>
+</body>
+</html>
