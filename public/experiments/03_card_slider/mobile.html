@@ -1383,6 +1383,7 @@ const cancelHold = () => {
 
 btn.addEventListener('pointerup',    cancelHold);
 btn.addEventListener('pointerleave', cancelHold);
+btn.addEventListener('contextmenu',  (e) => e.preventDefault());
 
 function triggerLockAnimation() {
   isLocked = true;
