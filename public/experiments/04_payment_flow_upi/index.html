@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UPI Secure Pay</title>
+  <!-- Tailwind CSS v4 via CDN -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <!-- Google Fonts: Figtree & Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+
+  <style>
+    /* --- CUSTOM WEB FONTS --- */
+    @font-face {
+      font-family: 'Open Runde';
+      src: url('open-runde/src/web/OpenRunde-Regular.woff2') format('woff2'),
+           url('open-runde/src/web/OpenRunde-Regular.woff') format('woff');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Open Runde';
+      src: url('open-runde/src/web/OpenRunde-Medium.woff2') format('woff2'),
+           url('open-runde/src/web/OpenRunde-Medium.woff') format('woff');
+      font-weight: 500;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Open Runde';
+      src: url('open-runde/src/web/OpenRunde-Semibold.woff2') format('woff2'),
+           url('open-runde/src/web/OpenRunde-Semibold.woff') format('woff');
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Open Runde';
+      src: url('open-runde/src/web/OpenRunde-Bold.woff2') format('woff2'),
+           url('open-runde/src/web/OpenRunde-Bold.woff') format('woff');
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    /* --- CSS DESIGN SYSTEM & CUSTOM ANIMATIONS --- */
+    .font-primary { font-family: 'Figtree', sans-serif; }
+    .font-secondary { font-family: 'Poppins', sans-serif; }
+    .font-numbers { font-family: 'Open Runde', 'Figtree', sans-serif; }
+
+    /* Hide standard scrollbars */
+    ::-webkit-scrollbar {
+      width: 0px;
+      background: transparent;
+    }
+
+    body {
+      background-color: #ffffff;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    @media (min-width: 640px) {
+      body {
+        background-color: #f4f4f5;
+      }
+    }
+
+    /* Snappy Apple-style Deceleration Curve for Height Morphs */
+    @media (min-width: 640px) {
+      .transition-bounds {
+        transition: height 0.45s cubic-bezier(0.19, 1, 0.22, 1), 
+                    width 0.45s cubic-bezier(0.19, 1, 0.22, 1);
+      }
+    }
+
+    /* Framer Motion equivalent animations */
+    @keyframes slideFromRight {
+      from { opacity: 0; transform: translateX(20px); filter: blur(4px); }
+      to { opacity: 1; transform: translateX(0); filter: blur(0px); }
+    }
+    @keyframes slideFromLeft {
+      from { opacity: 0; transform: translateX(-20px); filter: blur(4px); }
+      to { opacity: 1; transform: translateX(0); filter: blur(0px); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .slide-from-right {
+      animation: slideFromRight 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+    }
+    .slide-from-left {
+      animation: slideFromLeft 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+    }
+    .fade-in {
+      animation: fadeIn 0.35s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+    }
+
+    @keyframes keyEnter {
+      from { opacity: 0; transform: translateY(12px) scale(0.88); filter: blur(4px); }
+      to   { opacity: 1; transform: translateY(0)  scale(1);    filter: blur(0);  }
+    }
+    .key-enter {
+      animation: keyEnter 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Dialpad Button active squash transition */
+    .dial-btn {
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                  background-color 0.15s;
+    }
+    .dial-btn:active:not(:disabled) {
+      transform: scale(0.88) translateY(3px);
+      background-color: #e5e7eb;
+    }
+
+    /* Standard Interactive Button Push */
+    .btn-spring {
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.15s;
+    }
+    .btn-spring:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+
+    /* PIN Dot Wobble (Plaintext digit to Masked asterisk transitions) */
+    @keyframes pinDotWobble {
+      0% {
+        transform: translateY(24px) scale(0.5);
+        opacity: 0;
+      }
+      60% {
+        transform: translateY(-6px) scale(1.08);
+        opacity: 1;
+      }
+      85% {
+        transform: translateY(2px) scale(0.97);
+      }
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+    .pin-dot-wobble {
+      animation: pinDotWobble 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes pinDotExit {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-16px) scale(0.5);
+        opacity: 0;
+      }
+    }
+    .pin-dot-exit {
+      animation: pinDotExit 0.15s ease-in forwards;
+    }
+
+    /* ── General stagger-reveal entry ── */
+    @keyframes slideUpFadeIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.97); filter: blur(5px); }
+      to   { opacity: 1; transform: translateY(0)   scale(1);    filter: blur(0);  }
+    }
+    .anim-slide-up {
+      opacity: 0;
+      animation: slideUpFadeIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation-delay: var(--anim-delay, 0ms);
+    }
+
+    /* ── Spring badge for success/failure ── */
+    @keyframes badgeSpring {
+      0%   { opacity: 0; transform: scale(0.35) rotate(-18deg); }
+      55%  { opacity: 1; transform: scale(1.18) rotate(5deg);  }
+      75%  {             transform: scale(0.90) rotate(-2deg); }
+      90%  {             transform: scale(1.04) rotate(1deg);  }
+      100% { opacity: 1; transform: scale(1)    rotate(0deg);  }
+    }
+    .anim-badge-spring {
+      animation: badgeSpring 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    /* ── Processing logo bounce-in ── */
+    @keyframes logoBounceIn {
+      from { opacity: 0; transform: scale(0.65); filter: blur(6px); }
+      to   { opacity: 1; transform: scale(1);    filter: blur(0);   }
+    }
+    .anim-logo-bounce {
+      animation: logoBounceIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    /* ── Checkmark draw animation ── */
+    @keyframes drawCheck {
+      from { stroke-dashoffset: 30; }
+      to   { stroke-dashoffset: 0;  }
+    }
+    .checkmark {
+      stroke-dasharray: 30;
+      stroke-dashoffset: 30;
+      animation: drawCheck 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+    }
+    /* ── Crossmark draw animation ── */
+    @keyframes drawCross {
+      from { stroke-dashoffset: 16; }
+      to   { stroke-dashoffset: 0;  }
+    }
+    .crossmark {
+      stroke-dasharray: 16;
+      stroke-dashoffset: 16;
+    }
+    .crossmark:nth-child(1) { animation: drawCross 0.25s cubic-bezier(0.16,1,0.3,1) 0.25s forwards; }
+    .crossmark:nth-child(2) { animation: drawCross 0.25s cubic-bezier(0.16,1,0.3,1) 0.45s forwards; }
+
+    /* ── Balance visibility toggle ── */
+    .balance-value-transition {
+      transition: opacity 0.15s ease,
+                  transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .balance-eye-btn {
+      line-height: 0;
+      padding: 5px;
+      border-radius: 50%;
+      transition: color 0.2s ease, background-color 0.15s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .balance-eye-btn:hover  { color: #9CA3AF; background-color: #F3F4F6; }
+    .balance-eye-btn:active { background-color: #E5E7EB; }
+    @keyframes eyeSquish {
+      0%   { transform: scale(1)    rotate(0deg);  }
+      28%  { transform: scale(0.55) rotate(-14deg); }
+      65%  { transform: scale(1.22) rotate(7deg);  }
+      100% { transform: scale(1)    rotate(0deg);  }
+    }
+    .eye-squish { animation: eyeSquish 0.48s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+    /* ── Recipient pill shine sweep ── */
+    @keyframes shineSwipeLoop {
+      0%     { transform: translateX(-210%) skewX(-18deg); opacity: 0; }
+      4%     { opacity: 1; }
+      18%    { transform: translateX(230%)  skewX(-18deg); opacity: 0; }
+      18.01% { transform: translateX(-210%) skewX(-18deg); opacity: 0; }
+      100%   { transform: translateX(-210%) skewX(-18deg); opacity: 0; }
+    }
+    .shine-card { position: relative; overflow: hidden; }
+    .shine-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      width: 42%;
+      background: linear-gradient(
+        105deg,
+        transparent    0%,
+        rgba(255,255,255,0.80) 50%,
+        transparent   100%
+      );
+      animation: shineSwipeLoop 6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s infinite backwards;
+      pointer-events: none;
+      border-radius: inherit;
+    }
+
+    /* Exaggerated Shake for Error Input */
+    .shake-error {
+      animation: shakeError 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+      border-color: #ef4444 !important;
+    }
+    @keyframes shakeError {
+      0%, 100% { transform: translateX(0); }
+      15%, 45%, 75% { transform: translateX(-8px); }
+      30%, 60%, 90% { transform: translateX(8px); }
+    }
+
+    /* Confetti Particle Container */
+    .particle {
+      position: absolute;
+      pointer-events: none;
+      border-radius: 50%;
+      animation: particleBlow 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+    }
+    @keyframes particleBlow {
+      0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--tx), var(--ty)) scale(0.2);
+        opacity: 0;
+      }
+    }
+
+    /* Processing screen logo crossfade */
+    @keyframes logoFadeOut {
+      0%   { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.78); }
+    }
+    @keyframes logoFadeIn {
+      0%   { opacity: 0; transform: scale(0.78); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .logo-fade-out {
+      animation: logoFadeOut 0.35s cubic-bezier(0.4, 0, 1, 1) forwards;
+    }
+    .logo-fade-in {
+      animation: logoFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    /* Calligraph Transitions CSS */
+    .cg-container {
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .cg-char {
+      display: inline-block;
+      white-space: pre;
+      position: relative;
+      transform-origin: center;
+    }
+    .cg-exit {
+      display: inline-block;
+      white-space: pre;
+      position: absolute;
+      transform-origin: center;
+    }
+  </style>
+
+  <!-- ═══ DARK MODE CSS ═══ -->
+  <style>
+    /* Color palette (inspired by Revolut dark / iOS dark):
+       bg:         #111111  main surface
+       surface:    #1C1C1E  cards
+       key:        #2A2A2A  dialpad keys
+       border:     #3A3A3C
+       text-pri:   #F5F5F5
+       text-sec:   #8E8E93
+       text-ter:   #5A5A5E
+    */
+
+    /* Container */
+    #payment-card-container.dark-mode {
+      background-color: #111111 !important;
+      border-color: #2A2A2A !important;
+    }
+
+    /* All screen root divs (bg-white) */
+    #payment-card-container.dark-mode .bg-white {
+      background-color: #111111 !important;
+    }
+
+    /* ── AMOUNT SCREEN ── */
+    #payment-card-container.dark-mode #amount-display { color: #F5F5F5 !important; }
+    #payment-card-container.dark-mode #amount-recipient-pill {
+      background-color: #1C1C1E !important;
+      border-color: #3A3A3C !important;
+    }
+    #payment-card-container.dark-mode #amount-recipient-pill .text-\[\#0F0F0F\] { color: #F5F5F5 !important; }
+    #payment-card-container.dark-mode #amount-balance-value { color: #8E8E93 !important; }
+    #payment-card-container.dark-mode #amount-balance-row > span { color: #5A5A5E !important; }
+    #payment-card-container.dark-mode #btn-dark-toggle { color: #F5F5F5 !important; }
+    #payment-card-container.dark-mode #btn-dark-toggle:active { background-color: #2A2A2A !important; }
+    #payment-card-container.dark-mode .balance-eye-btn { color: #5A5A5E !important; }
+    #payment-card-container.dark-mode .balance-eye-btn:hover { background-color: #2A2A2A !important; }
+
+    /* Dialpad keys */
+    #payment-card-container.dark-mode .dial-btn {
+      background-color: #272727 !important;
+      color: #FAFAFA !important;
+    }
+    #payment-card-container.dark-mode .dial-btn-secondary {
+      background-color: #1D1D1D !important;
+      color: #FAFAFA !important;
+    }
+    #payment-card-container.dark-mode .dial-btn:active:not(:disabled),
+    #payment-card-container.dark-mode .dial-btn-secondary:active:not(:disabled) {
+      background-color: #3A3A3C !important;
+    }
+
+    /* Pay / primary CTA button */
+    #payment-card-container.dark-mode #btn-pay-now:not(:disabled) {
+      background-color: #F5F5F5 !important;
+      color: #111111 !important;
+    }
+    #payment-card-container.dark-mode #btn-pay-now:disabled {
+      background-color: #2A2A2A !important;
+      color: #555555 !important;
+    }
+
+    /* ── CONFIRM SCREEN ── */
+    #payment-card-container.dark-mode #confirm-amount { color: #F5F5F5 !important; }
+    #payment-card-container.dark-mode #confirm-pay-label { color: #8E8E93 !important; }
+    #payment-card-container.dark-mode #confirm-to-label { color: #8E8E93 !important; }
+    /* ── UNIFIED CARD & DIVIDER FIX ── */
+    #payment-card-container.dark-mode #confirm-info-card,
+    #payment-card-container.dark-mode #result-receipt-card {
+      background-color: #1C1C1E !important;
+      border-color: #48484A !important;
+      --tw-divide-opacity: 1 !important;
+      --tw-divide-color: #48484A !important;
+    }
+
+    /* Force overrides on Tailwind's sibling selectors for divide-y */
+    #payment-card-container.dark-mode #confirm-info-card > :not([hidden]) ~ :not([hidden]),
+    #payment-card-container.dark-mode #result-receipt-card > :not([hidden]) ~ :not([hidden]) {
+      border-top-width: 1px !important;
+      border-top-style: solid !important;
+      border-top-color: #48484A !important;
+      border-color: #48484A !important;
+    }
+    #payment-card-container.dark-mode #confirm-info-card .text-\[\#0F0F0F\] { color: #F5F5F5 !important; }
+    #payment-card-container.dark-mode #confirm-info-card .text-gray-400 { color: #6E6E73 !important; }
+    #payment-card-container.dark-mode #confirm-info-card .bg-\[\#F9FAFB\] {
+      background-color: #2A2A2A !important;
+      border-color: #3A3A3C !important;
+    }
+    #payment-card-container.dark-mode #confirm-secured { color: #5A5A5E !important; }
+    #payment-card-container.dark-mode #btn-confirm-cancel {
+      background-color: #2A2A2A !important;
+      color: #F5F5F5 !important;
+    }
+    #payment-card-container.dark-mode #btn-confirm-pay {
+      background-color: #F5F5F5 !important;
+      color: #111111 !important;
+    }
+
+    /* ── PROCESSING SCREEN ── */
+    #payment-card-container.dark-mode #processing-logo-wrap {
+      background-color: transparent !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+    }
+    #payment-card-container.dark-mode #processing-label { color: #F5F5F5 !important; }
+    /* spinner track */
+    #payment-card-container.dark-mode .border-\[\#F3F4F6\] { border-color: #3A3A3C !important; }
+    #payment-card-container.dark-mode .border-t-\[\#0F0F0F\] { border-top-color: #F5F5F5 !important; }
+
+    /* ── PIN SCREEN ── */
+    #payment-card-container.dark-mode #pin-amount { color: #F5F5F5 !important; }
+    #payment-card-container.dark-mode #pin-pay-label { color: #8E8E93 !important; }
+    #payment-card-container.dark-mode #pin-to-label { color: #8E8E93 !important; }
+    #payment-card-container.dark-mode #pin-upi-label { color: #5A5A5E !important; }
+    #payment-card-container.dark-mode #pin-dots-container [data-dot] { background-color: #2A2A2A !important; }
+    #payment-card-container.dark-mode #pin-info-box {
+      background-color: #1A1608 !important;
+      border-color: #3E3218 !important;
+      color: #8A6B10 !important;
+    }
+    #payment-card-container.dark-mode #pin-status { color: #5A5A5E !important; }
+    /* SBI label in PIN header */
+    #payment-card-container.dark-mode .font-primary.font-semibold.text-\[\#0F0F0F\] { color: #F5F5F5 !important; }
+
+    /* ── RESULT SCREEN ── */
+    #payment-card-container.dark-mode #result-title { color: #F5F5F5 !important; }
+    #payment-card-container.dark-mode #result-subtitle { color: #8E8E93 !important; }
+    #payment-card-container.dark-mode #result-receipt-card > :not([hidden]) ~ :not([hidden]) { border-color: #48484A !important; }
+    #payment-card-container.dark-mode #result-receipt-card .text-gray-500 { color: #8E8E93 !important; }
+    #payment-card-container.dark-mode #result-receipt-card .text-\[\#0F0F0F\] { color: #F5F5F5 !important; }
+    /* Result action buttons */
+    #payment-card-container.dark-mode #result-actions .bg-\[\#0F0F0F\] {
+      background-color: #F5F5F5 !important;
+      color: #111111 !important;
+    }
+    #payment-card-container.dark-mode #result-actions .bg-\[\#F3F4F6\] {
+      background-color: #2A2A2A !important;
+      color: #F5F5F5 !important;
+    }
+
+    /* Shared header labels & icons across all screens */
+    #payment-card-container.dark-mode .btn-spring.text-\[\#0F0F0F\] { color: #F5F5F5 !important; }
+    #payment-card-container.dark-mode .btn-spring.text-\[\#0F0F0F\]:active { background-color: #2A2A2A !important; }
+    #payment-card-container.dark-mode .text-gray-500 { color: #8E8E93 !important; }
+    #payment-card-container.dark-mode .text-gray-400 { color: #6E6E73 !important; }
+    /* Universal: any element whose class contains "text-[#0F0F0F]" becomes near-white in dark mode.
+       Fixes inline spans ("Aarav Mehta", bank name, etc.) that are otherwise invisible. */
+    #payment-card-container.dark-mode [class*="text-[#0F0F0F]"] { color: #F5F5F5 !important; }
+    /* Lucide icons inside delete / decimal buttons */
+    #payment-card-container.dark-mode .dial-btn-secondary i,
+    #payment-card-container.dark-mode .dial-btn-secondary svg { color: #FAFAFA !important; }
+  </style>
+</head>
+<body class="min-h-[100dvh] w-full flex items-center justify-center font-primary p-0 sm:p-4 antialiased selection:bg-zinc-800 selection:text-white">
+
+  <!-- Device Experience Gate (desktop/tablet only) -->
+  <div id="device-gate" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 backdrop-blur-[4px] px-4">
+    <div class="w-full max-w-[460px] rounded-[28px] border border-zinc-200/80 bg-white p-6 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.10)]">
+      <div class="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-zinc-200 bg-zinc-50 text-zinc-700">
+        <i data-lucide="smartphone" class="h-5 w-5"></i>
+      </div>
+      <h2 class="font-primary text-[24px] font-bold tracking-tight text-[#0F0F0F]">Best experienced on mobile</h2>
+      <p class="mt-2 font-secondary text-[14px] leading-relaxed text-gray-500">
+        This UPI payment flow was designed for mobile devices. On desktop or tablet, spacing and interactions may not feel fully natural.
+      </p>
+      <div class="mt-7 grid grid-cols-1 sm:grid-cols-[1fr_1.2fr] gap-3">
+        <button id="btn-gate-back" class="py-[15px] rounded-full bg-[#F3F4F6] font-primary font-semibold text-[15px] text-[#0F0F0F] btn-spring">
+          Back to experiments
+        </button>
+        <button id="btn-gate-continue" class="py-[15px] rounded-full bg-[#0F0F0F] font-primary font-semibold text-[15px] text-white btn-spring">
+          Continue anyway
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clean, self-contained payment container with bounds transitions -->
+  <div id="payment-card-container" class="w-full h-[100dvh] sm:h-auto sm:max-w-[480px] bg-white rounded-none sm:rounded-[32px] border-none sm:border sm:border-zinc-200/80 shadow-none sm:shadow-[0_20px_50px_rgba(0,0,0,0.04)] overflow-hidden relative flex flex-col select-none transition-bounds">
+    <div id="payment-inner" class="w-full h-full sm:h-auto flex flex-col relative overflow-hidden"></div>
+  </div>
+
+  <!-- --- SCREEN TEMPLATES --- -->
+
+  <!-- 1. Amount Entry Screen -->
+  <template id="temp-amount">
+    <div class="flex flex-col h-full sm:h-auto px-6 pt-12 pb-6 relative bg-white">
+      
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-10">
+        <button id="btn-dark-toggle" class="p-3 -ml-3 rounded-full active:bg-[#F3F4F6] transition-colors btn-spring text-[#0F0F0F]" type="button" aria-label="Toggle dark mode">
+          <i data-lucide="moon" id="dark-toggle-icon" class="w-5 h-5"></i>
+        </button>
+        <span class="font-primary font-semibold text-[15px] text-[#0F0F0F]">Send money</span>
+        <div class="p-3 -mr-3 text-gray-400">
+          <i data-lucide="shield-check" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <!-- Recipient Pill -->
+      <div id="amount-recipient-pill" class="shine-card mx-auto flex items-center gap-3 bg-[#F9FAFB] border border-[#F3F4F6] p-1.5 pr-5 rounded-full w-max mb-12">
+        <img src="images/pfp.jpeg" alt="Aarav Mehta" class="w-10 h-10 rounded-full object-cover" />
+        <div class="flex flex-col justify-center mr-2 text-left">
+          <span class="font-primary text-[15px] font-bold text-[#0F0F0F] leading-tight">Aarav Mehta</span>
+          <span class="font-secondary text-[11px] text-gray-500 leading-tight">aarav.mehta@okhdfcbank</span>
+        </div>
+        <div class="flex items-center gap-1 bg-[#E6F4EA] px-2 py-1 rounded-full">
+          <i data-lucide="check" class="w-3 h-3 text-[#1E4620] stroke-[3]"></i>
+          <span class="font-secondary text-[10px] font-bold text-[#1E4620] uppercase">Verified</span>
+        </div>
+      </div>
+
+      <!-- Amount Display -->
+      <div class="flex flex-col items-center justify-center flex-grow mb-10 select-none">
+        <span class="font-secondary text-[12px] text-gray-500 font-medium mb-2 uppercase tracking-widest">Enter Amount</span>
+        <div class="flex items-center justify-center overflow-hidden h-[80px] w-full max-w-[320px]">
+          <span id="amount-display" class="font-numbers font-semibold tracking-tighter text-[#0F0F0F] leading-none text-[72px] whitespace-nowrap">₹2,450</span>
+        </div>
+        
+        <div class="mt-4 flex items-center justify-center h-7">
+          <!-- Error/limit message – only shown when limit exceeded -->
+          <span id="amount-meta" class="font-secondary text-[13px] font-medium text-gray-500 transition-colors" style="display:none;"></span>
+          <!-- Balance row with eye toggle (default state) -->
+          <div id="amount-balance-row" class="flex items-center gap-0.5" style="display:flex;">
+            <span class="font-secondary text-[13px] font-medium text-gray-400">Available balance&nbsp;·&nbsp;</span>
+            <span id="amount-balance-value" class="font-numbers text-[13px] font-medium text-gray-500 balance-value-transition" style="letter-spacing:0.2em;">₹ ••••••</span>
+            <button id="btn-balance-eye" class="balance-eye-btn text-gray-300 ml-1" type="button" aria-label="Toggle balance visibility">
+              <!-- eye-off: visible when balance is hidden -->
+              <i data-lucide="eye-off" id="balance-icon-off" class="w-3.5 h-3.5 block"></i>
+              <!-- eye: visible when balance is revealed -->
+              <i data-lucide="eye"     id="balance-icon-on"  class="w-3.5 h-3.5 hidden"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dialpad -->
+      <div class="grid grid-cols-3 gap-2 w-full max-w-[380px] mx-auto pb-8" id="dialpad-amount"></div>
+
+      <!-- Pay CTA -->
+      <button id="btn-pay-now" class="w-full py-[18px] rounded-full font-primary flex items-center justify-center gap-2 font-semibold text-[16px] transition-colors bg-[#0F0F0F] text-white disabled:bg-[#F3F4F6] disabled:text-[#A1A1AA] btn-spring">
+        <span class="font-numbers">Pay ₹2,450</span>
+        <i data-lucide="chevron-right" class="w-5 h-5"></i>
+      </button>
+    </div>
+  </template>
+
+  <!-- 2. Review Payment Screen -->
+  <template id="temp-confirm">
+    <div class="flex flex-col h-full sm:h-auto px-6 pt-12 pb-6 relative bg-white">
+      
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-8">
+        <button id="btn-confirm-back" class="p-3 -ml-3 rounded-full active:bg-[#F3F4F6] transition-colors btn-spring text-[#0F0F0F]">
+          <i data-lucide="arrow-left" class="w-6 h-6"></i>
+        </button>
+        <span class="font-primary font-semibold text-[15px] text-[#0F0F0F] mx-auto pr-6">Review payment</span>
+      </div>
+
+      <div class="flex flex-col flex-grow py-8">
+        <img id="confirm-avatar" src="images/pfp.jpeg" alt="Aarav Mehta" class="mx-auto mb-6 w-16 h-16 rounded-2xl object-cover border border-zinc-100 shadow-sm" />
+
+        <p id="confirm-pay-label" class="text-center font-secondary text-[12px] font-medium text-gray-500 uppercase tracking-widest mb-1">Pay</p>
+        <h1 id="confirm-amount" class="text-center font-numbers text-[56px] font-bold tracking-tighter text-[#0F0F0F] leading-none mb-3">₹2,450</h1>
+        <p id="confirm-to-label" class="text-center font-secondary text-[14px] text-gray-500">to <span class="font-semibold text-[#0F0F0F]">Aarav Mehta</span></p>
+
+        <!-- Payment Info Card -->
+        <div id="confirm-info-card" class="mt-10 border border-[#E5E7EB] rounded-[24px] bg-white divide-y divide-[#E5E7EB] shadow-sm">
+          <div class="flex items-center gap-4 p-5">
+            <div class="w-10 h-10 rounded-xl bg-[#F9FAFB] flex items-center justify-center border border-[#F3F4F6] p-2">
+              <img src="images/sbi.svg" alt="SBI Bank" class="w-full h-full object-contain" />
+            </div>
+            <div class="text-left">
+              <p class="font-secondary text-[11px] text-gray-400 uppercase tracking-wider mb-0.5">Paying from</p>
+              <p class="font-primary text-[15px] font-semibold text-[#0F0F0F]">State Bank of India ·· 4821</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 p-5">
+            <div class="w-10 h-10 rounded-xl bg-[#F9FAFB] flex items-center justify-center border border-[#F3F4F6]">
+              <i data-lucide="receipt-text" class="w-5 h-5 text-gray-600"></i>
+            </div>
+            <div class="overflow-hidden text-left">
+              <p class="font-secondary text-[11px] text-gray-400 uppercase tracking-wider mb-0.5">Recipient UPI ID</p>
+              <p class="font-primary text-[15px] font-semibold text-[#0F0F0F] truncate">aarav.mehta@okhdfcbank</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="confirm-secured" class="mt-6 flex items-center justify-center gap-1.5 font-secondary text-[12px] text-gray-400">
+          <i data-lucide="lock-keyhole" class="w-3.5 h-3.5"></i> Secured by UPI
+        </div>
+      </div>
+
+      <div id="confirm-buttons" class="grid grid-cols-[1fr_2fr] gap-3 mt-8">
+        <button id="btn-confirm-cancel" class="py-[18px] rounded-full font-primary font-semibold text-[16px] bg-[#F3F4F6] text-[#0F0F0F] btn-spring">
+          Cancel
+        </button>
+        <button id="btn-confirm-pay" class="py-[18px] rounded-full font-primary font-semibold text-[16px] bg-[#0F0F0F] text-white btn-spring">
+          Confirm payment
+        </button>
+      </div>
+    </div>
+  </template>
+
+  <!-- 3. Processing Screen -->
+  <template id="temp-processing">
+    <div class="flex flex-col items-center justify-center h-full px-6 py-20 bg-white">
+      <div class="relative w-28 h-28 flex items-center justify-center mb-8">
+        <!-- Spinning border indicator -->
+        <div class="absolute inset-0 rounded-full border-[2px] border-[#F3F4F6] border-t-[#0F0F0F] animate-spin"></div>
+        <!-- Logo wrapper – JS swaps between NPCI and SBI -->
+        <div id="processing-logo-wrap" class="w-[72px] h-[72px] bg-[#F9FAFB] rounded-[24px] border border-[#F3F4F6] flex items-center justify-center shadow-sm overflow-hidden relative">
+          <img id="processing-logo" src="images/npci.jpeg" alt="NPCI" class="absolute inset-0 w-full h-full object-cover rounded-full p-2" />
+        </div>
+      </div>
+      <h2 id="processing-label" class="font-primary font-bold text-[22px] text-[#0F0F0F] mb-2 text-center transition-all duration-200">Connecting securely</h2>
+      <p class="font-secondary text-[14px] text-gray-500 text-center">
+        Please don't close this screen
+      </p>
+    </div>
+  </template>
+
+  <!-- 4. PIN Entry Screen -->
+  <template id="temp-pin">
+    <div class="flex flex-col h-full bg-white px-6 pt-12 pb-6">
+      
+      <!-- Header -->
+      <div class="flex items-center mb-6">
+        <button id="btn-pin-back" class="p-3 -ml-3 rounded-full active:bg-[#F3F4F6] transition-colors disabled:opacity-50 text-[#0F0F0F] btn-spring">
+          <i data-lucide="arrow-left" class="w-6 h-6"></i>
+        </button>
+        <div class="flex items-center gap-2 mx-auto pr-6">
+          <img src="images/sbi.svg" alt="SBI Bank" class="w-5 h-5 object-contain" />
+          <span class="font-primary font-semibold text-[15px] text-[#0F0F0F]">State Bank of India</span>
+        </div>
+      </div>
+
+      <div class="flex-grow flex flex-col items-center pt-4">
+        <p id="pin-pay-label" class="font-secondary text-[12px] font-medium text-gray-500 uppercase tracking-widest mb-1">Pay</p>
+        <h1 id="pin-amount" class="font-numbers font-bold text-[48px] text-[#0F0F0F] leading-none mb-2">₹2,450</h1>
+        <p id="pin-to-label" class="font-secondary text-[14px] text-gray-500 mb-8">to <span class="font-semibold text-[#0F0F0F]">Aarav Mehta</span></p>
+
+        <p id="pin-upi-label" class="font-secondary text-[12px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-5">Enter UPI PIN</p>
+
+        <!-- PIN Dot Indicators -->
+        <div id="pin-dots-container" class="flex justify-center gap-4 sm:gap-5 mb-8 w-full">
+          <div class="w-[60px] h-[60px] sm:w-[68px] sm:h-[68px] rounded-full bg-[#F3F4F6] flex items-center justify-center overflow-hidden relative transition-all duration-200" data-dot="0"></div>
+          <div class="w-[60px] h-[60px] sm:w-[68px] sm:h-[68px] rounded-full bg-[#F3F4F6] flex items-center justify-center overflow-hidden relative transition-all duration-200" data-dot="1"></div>
+          <div class="w-[60px] h-[60px] sm:w-[68px] sm:h-[68px] rounded-full bg-[#F3F4F6] flex items-center justify-center overflow-hidden relative transition-all duration-200" data-dot="2"></div>
+          <div class="w-[60px] h-[60px] sm:w-[68px] sm:h-[68px] rounded-full bg-[#F3F4F6] flex items-center justify-center overflow-hidden relative transition-all duration-200" data-dot="3"></div>
+        </div>
+
+        <!-- Warning Info Box -->
+        <div id="pin-info-box" class="flex items-start gap-3 bg-[#FFF9E6] border border-[#FFE8A1] text-[#997300] p-4 rounded-[20px] mb-8 w-full max-w-sm mx-auto shadow-sm">
+          <i data-lucide="info" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
+          <p class="font-secondary text-[12px] leading-relaxed text-left">
+            <strong>Never enter your UPI PIN to receive money.</strong> Only use it to approve payments.
+          </p>
+        </div>
+      </div>
+
+      <!-- Dialpad (no decimals) -->
+      <div class="grid grid-cols-3 gap-2 w-full max-w-[380px] mx-auto pb-8" id="dialpad-pin"></div>
+      
+      <div class="mt-2 h-6 flex items-center justify-center font-secondary text-[12px] font-medium text-gray-400">
+        <div id="pin-status" class="flex items-center gap-1.5">
+          <span id="pin-status-icon" class="flex items-center"><i data-lucide="lock-keyhole" class="w-3.5 h-3.5"></i></span>
+          <span id="pin-status-text">PIN is encrypted</span>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- 5. Result Screen (Success / Failure) -->
+  <template id="temp-result">
+    <div class="flex flex-col h-full bg-white px-6 pt-16 pb-6">
+      
+      <div class="flex flex-col flex-grow items-center justify-center relative" id="confetti-anchor">
+        
+        <!-- Animated success/failure circle -->
+        <div id="result-badge" class="w-[100px] h-[100px] rounded-full flex items-center justify-center mb-8 transition-all duration-300">
+          <!-- Populated by JS -->
+        </div>
+
+        <h1 id="result-title" class="font-primary text-[28px] font-bold text-[#0F0F0F] mb-3 text-center">Payment successful</h1>
+        <p id="result-subtitle" class="font-secondary text-[14px] text-gray-500 text-center max-w-[280px] mb-10 leading-relaxed">
+          ₹2,450 was sent to Aarav Mehta
+        </p>
+
+        <!-- receipt details box -->
+        <div id="result-receipt-card" class="w-full border border-[#E5E7EB] rounded-[24px] bg-white divide-y divide-[#e5e7eb] shadow-sm px-6">
+          <div class="flex items-center justify-between py-5">
+            <span class="font-secondary text-[13px] text-gray-500">Amount</span>
+            <strong id="result-receipt-amount" class="font-numbers text-[15px] font-semibold text-[#0F0F0F]">₹2,450</strong>
+          </div>
+          <div class="flex items-center justify-between py-5">
+            <span class="font-secondary text-[13px] text-gray-500">Bank</span>
+            <div class="flex items-center gap-1.5">
+              <img src="images/sbi.svg" alt="SBI Bank" class="w-4 h-4 object-contain" />
+              <strong class="font-primary text-[15px] font-semibold text-[#0F0F0F]">State Bank of India ·· 4821</strong>
+            </div>
+          </div>
+          <div class="flex items-center justify-between py-5">
+            <span id="result-receipt-tx-label" class="font-secondary text-[13px] text-gray-500">Transaction ID</span>
+            <strong id="result-receipt-tx" class="font-numbers text-[12px] font-semibold text-[#0F0F0F] select-text">UPI58392018274</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-6 w-full" id="result-actions"></div>
+    </div>
+  </template>
+
+  <!-- --- JAVASCRIPT APP LOGIC --- -->
+  <script>
+    // --- CALLIGRAPH ANIMATION ENGINE ---
+    const Calligraph = (() => {
+      function splitGraphemes(s) {
+        if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+          const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+          return Array.from(segmenter.segment(s), (seg) => seg.segment);
+        }
+        return [...s];
+      }
+
+      function isDigit(c) {
+        return c >= "0" && c <= "9";
+      }
+
+      function computeLCS(oldSegs, newSegs) {
+        const m = oldSegs.length;
+        const n = newSegs.length;
+        const dp = [];
+
+        for (let i = 0; i <= m; i++) {
+          dp[i] = [];
+          for (let j = 0; j <= n; j++) {
+            if (i === 0 || j === 0) {
+              dp[i][j] = 0;
+            } else if (oldSegs[i - 1] === newSegs[j - 1]) {
+              dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+              dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+            }
+          }
+        }
+
+        const pairs = [];
+        let i = m;
+        let j = n;
+
+        while (i > 0 && j > 0) {
+          if (oldSegs[i - 1] === newSegs[j - 1]) {
+            pairs.push([i - 1, j - 1]);
+            i--;
+            j--;
+          } else if (
+            dp[i - 1][j] > dp[i][j - 1] ||
+            (dp[i - 1][j] === dp[i][j - 1] && i >= j)
+          ) {
+            i--;
+          } else {
+            j--;
+          }
+        }
+
+        pairs.reverse();
+        return pairs;
+      }
+
+      function reconcileTextKeys(prevText, newText, prevKeys, nextId) {
+        const prevSegs = splitGraphemes(prevText);
+        const newSegs = splitGraphemes(newText);
+        const matches = computeLCS(prevSegs, newSegs);
+        const newKeys = new Array(newSegs.length).fill("");
+
+        for (const [oldIdx, newIdx] of matches) {
+          newKeys[newIdx] = prevKeys[oldIdx];
+        }
+
+        let id = nextId;
+        let newCount = 0;
+        for (let i = 0; i < newKeys.length; i++) {
+          if (!newKeys[i]) {
+            newKeys[i] = `c${id++}`;
+            newCount++;
+          }
+        }
+
+        const keptCount = newSegs.length - newCount;
+        const removedCount = prevSegs.length - keptCount;
+        const totalChange = newCount + removedCount;
+        const maxLen = Math.max(newSegs.length, prevSegs.length);
+
+        return {
+          keys: newKeys,
+          changeRatio: maxLen > 0 ? totalChange / maxLen : 1,
+          nextId: id,
+        };
+      }
+
+      function reconcileDigitKeys(prevText, newText, prevKeys, nextId) {
+        const toNum = (s) => parseFloat(s.replace(/[^0-9.-]/g, "")) || 0;
+        const direction = Math.sign(toNum(newText) - toNum(prevText)) || 1;
+
+        const oldChars = splitGraphemes(prevText);
+        const newChars = splitGraphemes(newText);
+
+        const firstDigitIndex = (arr) => {
+          const idx = arr.findIndex((c) => isDigit(c));
+          return idx === -1 ? arr.length : idx;
+        };
+
+        const newPrefixLen = firstDigitIndex(newChars);
+        const oldPrefixLen = firstDigitIndex(oldChars);
+        const minPrefix = Math.min(newPrefixLen, oldPrefixLen);
+
+        const newKeys = new Array(newChars.length);
+        let id = nextId;
+
+        for (let i = 0; i < newPrefixLen; i++) {
+          newKeys[i] =
+            i < minPrefix && newChars[i] === oldChars[i] ? prevKeys[i] : `d${id++}`;
+        }
+
+        const oldBody = oldChars.slice(oldPrefixLen);
+        const newBody = newChars.slice(newPrefixLen);
+        const oldBodyKeys = prevKeys.slice(oldPrefixLen);
+        const maxBodyLen = Math.max(oldBody.length, newBody.length);
+
+        const padOld = [
+          ...Array(Math.max(0, maxBodyLen - oldBody.length)).fill(""),
+          ...oldBody,
+        ];
+        const padNew = [
+          ...Array(Math.max(0, maxBodyLen - newBody.length)).fill(""),
+          ...newBody,
+        ];
+        const padKeys = [
+          ...Array(Math.max(0, maxBodyLen - oldBodyKeys.length)).fill(-1),
+          ...oldBodyKeys,
+        ];
+
+        const bodyOffset = maxBodyLen - newBody.length;
+        for (let i = 0; i < newBody.length; i++) {
+          const pi = bodyOffset + i;
+          newKeys[newPrefixLen + i] =
+            padNew[pi] === padOld[pi] && padKeys[pi] !== -1 && padKeys[pi] !== undefined ? padKeys[pi] : `d${id++}`;
+        }
+
+        return { keys: newKeys, direction, nextId: id };
+      }
+
+      const animations = {
+        default: { duration: 380, ease: "cubic-bezier(0.19, 1, 0.22, 1)" },
+        smooth: { duration: 400, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+        snappy: { duration: 350, ease: "cubic-bezier(0.19, 1.2, 0.22, 1)" },
+        bouncy: { duration: 500, ease: "cubic-bezier(0.34, 1.56, 0.64, 1)" },
+      };
+
+      function animate(element, newText, options = {}) {
+        if (!element) return;
+        newText = String(newText);
+
+        if (!element.classList.contains('cg-container')) {
+          element.classList.add('cg-container');
+          element.style.display = 'inline-flex';
+          element.style.alignItems = 'center';
+          element.style.justifyContent = 'center';
+          element.style.position = 'relative';
+        }
+
+        const variant = options.variant || 'text';
+        const animationName = options.animation || (variant === 'number' ? 'snappy' : 'default');
+        const { duration, ease } = animations[animationName] || animations.default;
+
+        const driftX = options.drift && options.drift.hasOwnProperty('x') ? options.drift.x : 15;
+        const driftY = options.drift && options.drift.hasOwnProperty('y') ? options.drift.y : 0;
+        const trend = options.trend !== undefined ? options.trend : 0;
+        const stagger = options.stagger !== undefined ? options.stagger : 0.02;
+        const autoSize = options.autoSize !== undefined ? options.autoSize : true;
+
+        let state = element._cgState;
+        if (!state) {
+          const graphemes = splitGraphemes(newText);
+          const keys = graphemes.map((_, i) => `c${i}`);
+          element._cgState = {
+            text: newText,
+            keys: keys,
+            nextId: graphemes.length
+          };
+
+          element.innerHTML = '';
+          graphemes.forEach((char, i) => {
+            const span = document.createElement('span');
+            span.className = 'cg-char';
+            span.dataset.key = keys[i];
+            span.textContent = char;
+            span.style.display = 'inline-block';
+            span.style.whiteSpace = 'pre';
+            span.style.position = 'relative';
+            element.appendChild(span);
+
+            if (options.initial) {
+              span.style.opacity = '0';
+              span.style.filter = 'blur(4px)';
+              span.style.transform = 'scale(0.85)';
+
+              setTimeout(() => {
+                span.style.transition = `transform ${duration}ms ${ease}, opacity ${duration}ms ${ease}, filter ${duration}ms ${ease}, scale ${duration}ms ${ease}`;
+                span.style.transitionDelay = `${stagger * i}s`;
+                span.style.opacity = '1';
+                span.style.filter = 'blur(0px)';
+                span.style.transform = 'scale(1)';
+              }, 10);
+            }
+          });
+          return;
+        }
+
+        const prevText = state.text;
+        const prevKeys = state.keys;
+        const nextId = state.nextId;
+
+        if (prevText === newText) return;
+
+        const parentRect = element.getBoundingClientRect();
+        const oldSpans = Array.from(element.children).filter(el => el.classList.contains('cg-char') && !el.classList.contains('cg-exit'));
+        const oldMap = new Map();
+        oldSpans.forEach(span => {
+          oldMap.set(span.dataset.key, {
+            span: span,
+            rect: span.getBoundingClientRect()
+          });
+        });
+
+        let reconcileRes;
+        if (variant === 'number') {
+          reconcileRes = reconcileDigitKeys(prevText, newText, prevKeys, nextId);
+        } else {
+          reconcileRes = reconcileTextKeys(prevText, newText, prevKeys, nextId);
+        }
+        const nextKeys = reconcileRes.keys;
+        const nextNextId = reconcileRes.nextId;
+        const changeRatio = reconcileRes.changeRatio || 0.5;
+        const direction = reconcileRes.direction || 1;
+
+        const newGraphemes = splitGraphemes(newText);
+        const prevTextGraphemes = splitGraphemes(prevText);
+
+        const exitingClones = [];
+        oldMap.forEach((val, key) => {
+          if (!nextKeys.includes(key)) {
+            const oldSpan = val.span;
+            const oldRect = val.rect;
+
+            const left = oldRect.left - parentRect.left;
+            const top = oldRect.top - parentRect.top;
+
+            const clone = oldSpan.cloneNode(true);
+            clone.classList.remove('cg-char');
+            clone.classList.add('cg-exit');
+            clone.style.position = 'absolute';
+            clone.style.left = `${left}px`;
+            clone.style.top = `${top}px`;
+            clone.style.margin = '0';
+            clone.style.pointerEvents = 'none';
+
+            const oldIdx = prevTextGraphemes.indexOf(oldSpan.textContent);
+            exitingClones.push({ clone, key, oldRect, oldIdx: oldIdx !== -1 ? oldIdx : 0 });
+          }
+        });
+
+        const newSpans = newGraphemes.map((char, i) => {
+          const span = document.createElement('span');
+          span.className = 'cg-char';
+          span.dataset.key = nextKeys[i];
+          span.textContent = char;
+          span.style.display = 'inline-block';
+          span.style.whiteSpace = 'pre';
+          span.style.position = 'relative';
+          return span;
+        });
+
+        const oldWidth = parentRect.width;
+        const oldHeight = parentRect.height;
+
+        element.innerHTML = '';
+        newSpans.forEach(span => element.appendChild(span));
+        exitingClones.forEach(item => element.appendChild(item.clone));
+
+        const newParentRect = element.getBoundingClientRect();
+        const newWidth = newParentRect.width;
+        const newHeight = newParentRect.height;
+
+        if (autoSize && (oldWidth > 0 && oldHeight > 0)) {
+          element.style.transition = 'none';
+          element.style.width = `${oldWidth}px`;
+          element.style.height = `${oldHeight}px`;
+        }
+
+        const newRects = newSpans.map(span => span.getBoundingClientRect());
+
+        newSpans.forEach((span, idx) => {
+          const key = span.dataset.key;
+          const oldVal = oldMap.get(key);
+
+          if (oldVal) {
+            const oldRect = oldVal.rect;
+            const newRect = newRects[idx];
+            const dx = oldRect.left - newRect.left;
+            const dy = oldRect.top - newRect.top;
+
+            span.style.transform = `translate(${dx}px, ${dy}px)`;
+            span.style.transition = 'none';
+            span.style.opacity = '1';
+            span.style.filter = 'blur(0px)';
+            span.style.scale = '1';
+          } else {
+            if (variant === 'number') {
+              const prefixLen = newGraphemes.findIndex(c => isDigit(c));
+              const isPrefix = idx < (prefixLen === -1 ? newGraphemes.length : prefixLen);
+              if (isPrefix) {
+                span.style.opacity = '1';
+                span.style.transform = 'none';
+                span.style.filter = 'none';
+                span.style.scale = '1';
+              } else {
+                const yOffset = isDigit(newGraphemes[idx]) ? (direction > 0 ? 8 : -8) : 0;
+                span.style.transform = `translateY(${yOffset}px) scale(0.5)`;
+                span.style.opacity = '0';
+                span.style.filter = 'blur(2px)';
+                span.style.transition = 'none';
+              }
+            } else {
+              const progress = newSpans.length <= 1 ? 0 : idx / (newSpans.length - 1);
+              const offsetX = (progress - 0.5) * driftX * changeRatio;
+              const offsetY = (progress - 0.5) * driftY * changeRatio;
+              const trendY = trend * 8 * changeRatio;
+
+              span.style.transform = `translate(${offsetX}px, ${offsetY + trendY}px) scale(0.85)`;
+              span.style.opacity = '0';
+              span.style.filter = 'blur(4px)';
+              span.style.transition = 'none';
+            }
+          }
+        });
+
+        exitingClones.forEach(item => {
+          const { clone } = item;
+          clone.style.transform = 'translate(0px, 0px) scale(1)';
+          clone.style.opacity = '1';
+          clone.style.filter = 'blur(0px)';
+          clone.style.transition = 'none';
+        });
+
+        element.offsetHeight; // force reflow
+
+        const transitionStr = `transform ${duration}ms ${ease}, opacity ${duration}ms ${ease}, filter ${duration}ms ${ease}, scale ${duration}ms ${ease}`;
+
+        if (autoSize && (oldWidth > 0 && oldHeight > 0)) {
+          element.style.transition = `width ${duration}ms ${ease}, height ${duration}ms ${ease}`;
+          element.style.width = `${newWidth}px`;
+          element.style.height = `${newHeight}px`;
+        }
+
+        newSpans.forEach((span, idx) => {
+          const key = span.dataset.key;
+          const isNew = !oldMap.has(key);
+
+          span.style.transition = transitionStr;
+          if (isNew) {
+            span.style.transitionDelay = `${stagger * idx}s`;
+          }
+          span.style.transform = 'translate(0px, 0px) scale(1)';
+          span.style.opacity = '1';
+          span.style.filter = 'blur(0px)';
+          span.style.scale = '1';
+        });
+
+        exitingClones.forEach(item => {
+          const { clone, oldIdx } = item;
+          clone.style.transition = transitionStr;
+          clone.style.transitionDelay = `${stagger * oldIdx}s`;
+
+          if (variant === 'number') {
+            const yOffset = isDigit(clone.textContent) ? (direction > 0 ? -8 : 8) : 0;
+            clone.style.transform = `translateY(${yOffset}px) scale(0.5)`;
+            clone.style.opacity = '0';
+            clone.style.filter = 'blur(2px)';
+          } else {
+            const progress = oldSpans.length <= 1 ? 0 : oldIdx / (oldSpans.length - 1);
+            const offsetX = (progress - 0.5) * driftX * changeRatio;
+            const offsetY = (progress - 0.5) * driftY * changeRatio;
+            const trendY = trend * 8 * changeRatio;
+
+            clone.style.transform = `translate(${offsetX}px, ${offsetY - trendY}px) scale(0.85)`;
+            clone.style.opacity = '0';
+            clone.style.filter = 'blur(4px)';
+          }
+
+          setTimeout(() => {
+            clone.remove();
+          }, duration + (stagger * oldIdx * 1000) + 50);
+        });
+
+        element._cgState = {
+          text: newText,
+          keys: nextKeys,
+          nextId: nextNextId
+        };
+
+        const totalDuration = duration + (newSpans.length * stagger * 1000) + 50;
+        setTimeout(() => {
+          if (element._cgState && element._cgState.text === newText) {
+            if (autoSize) {
+              element.style.transition = '';
+              element.style.width = '';
+              element.style.height = '';
+            }
+            newSpans.forEach(span => {
+              if (span.parentNode === element) {
+                span.style.transition = '';
+                span.style.transitionDelay = '';
+              }
+            });
+            if (options.onComplete) options.onComplete();
+          }
+        }, totalDuration);
+      }
+
+      return {
+        animate
+      };
+    })();
+
+    // --- STAGE / DATA CONFIGURATION ---
+    const RECIPIENT = {
+      name: "Aarav Mehta",
+      upiId: "aarav.mehta@okhdfcbank",
+      initials: "AM"
+    };
+
+    const USER_BANK = {
+      name: "State Bank of India",
+      balance: "48,320.50",
+      accountLast4: "4821"
+    };
+
+    const SUCCESS_PIN = "2580";
+    const MAX_AMOUNT = 100000;
+
+    // --- APPLICATION STATE ---
+    let currentStep = 'amount';
+    let enteredAmount = '2450';
+    let enteredPin = '';
+    let isPinSubmitting = false;
+    let isInitialLoad = true;
+    let isDarkMode = false;
+
+    // --- DOM UTILS ---
+    function formatAmount(value) {
+      if (!value) return "0";
+      const [whole = "0", decimal] = value.split(".");
+      const formatted = Number(whole || 0).toLocaleString("en-IN");
+      return decimal === undefined ? formatted : `${formatted}.${decimal}`;
+    }
+
+    // Toggle dark-mode class on the payment container
+    function applyDarkMode() {
+      const container = document.getElementById('payment-card-container');
+      if (!container) return;
+      container.classList.toggle('dark-mode', isDarkMode);
+
+      const confirmCard = document.getElementById('confirm-info-card');
+      if (confirmCard) {
+        confirmCard.style.setProperty('--tw-divide-color', isDarkMode ? '#48484A' : '#E5E7EB');
+        confirmCard.style.setProperty('--tw-divide-opacity', '1');
+        const rows = confirmCard.querySelectorAll(':scope > :not([hidden]) ~ :not([hidden])');
+        rows.forEach((row) => {
+          row.style.borderTopColor = isDarkMode ? '#48484A' : '#E5E7EB';
+          row.style.borderTopWidth = '1px';
+          row.style.borderTopStyle = 'solid';
+        });
+      }
+    }
+
+    // --- ANIMATION HELPERS ---
+    // Stagger-reveal: applies .anim-slide-up with increasing delays to a list of elements.
+    function staggerReveal(ids, baseDelay = 80, step = 65) {
+      ids.forEach((id, i) => {
+        const el = typeof id === 'string' ? document.getElementById(id) : id;
+        if (!el) return;
+        el.style.setProperty('--anim-delay', `${baseDelay + i * step}ms`);
+        el.classList.add('anim-slide-up');
+      });
+    }
+
+    // --- NAVIGATION LOGIC ---
+    function getTransitionDirection(from, to) {
+      if (from === 'amount' && to === 'confirm') return 'forward';
+      if (from === 'confirm' && to === 'processing') return 'forward';
+      if (from === 'processing' && to === 'pin') return 'forward';
+      if (from === 'pin' && (to === 'success' || to === 'failure')) return 'forward';
+      return 'backward';
+    }
+
+    function goToStep(step, data = {}) {
+      const card = document.getElementById('payment-card-container');
+      const inner = document.getElementById('payment-inner');
+      const prevStep = currentStep;
+      currentStep = step;
+
+      // 1. Clear PIN input state when changing steps
+      if (step !== 'pin') {
+        enteredPin = '';
+        isPinSubmitting = false;
+      }
+
+      // 2. Retrieve template content
+      const templateId = (step === 'success' || step === 'failure') ? 'temp-result' : `temp-${step}`;
+      const template = document.getElementById(templateId);
+      const clone = template.content.cloneNode(true);
+      const newScreen = clone.firstElementChild;
+
+      if (newScreen) {
+        newScreen.className = newScreen.className.replace(/slide-from-[a-z]+/g, '').replace(/fade-in/g, '').trim();
+      }
+
+      const oldScreen = inner.firstElementChild;
+
+      if (!oldScreen || isInitialLoad) {
+        inner.innerHTML = '';
+        inner.appendChild(clone);
+        initStep(step, data);
+        lucide.createIcons();
+        isInitialLoad = false;
+        return;
+      }
+
+      // Get direction of transition
+      const direction = getTransitionDirection(prevStep, currentStep);
+
+      // Measure heights for the bounds transitions
+      const oldHeight = oldScreen.getBoundingClientRect().height;
+      
+      // Temporarily append the new screen invisibly to measure its natural height
+      newScreen.style.position = 'absolute';
+      newScreen.style.visibility = 'hidden';
+      newScreen.style.opacity = '0';
+      newScreen.style.pointerEvents = 'none';
+      inner.appendChild(newScreen);
+      const newHeight = newScreen.getBoundingClientRect().height;
+      inner.removeChild(newScreen);
+
+      // Reset styles for transition
+      newScreen.style.position = '';
+      newScreen.style.visibility = '';
+      newScreen.style.opacity = '';
+      newScreen.style.pointerEvents = '';
+
+      // Set explicit heights for transition bounds
+      inner.style.transition = 'none';
+      inner.style.height = `${oldHeight}px`;
+
+      // Absolute position screens during animation
+      oldScreen.style.position = 'absolute';
+      oldScreen.style.top = '0';
+      oldScreen.style.left = '0';
+      oldScreen.style.width = '100%';
+      oldScreen.style.height = '100%';
+      
+      newScreen.style.position = 'absolute';
+      newScreen.style.top = '0';
+      newScreen.style.left = '0';
+      newScreen.style.width = '100%';
+      newScreen.style.height = '100%';
+
+      // Set initial SwiftUI state styles
+      if (direction === 'forward') {
+        newScreen.style.transform = 'translateX(100%)';
+        newScreen.style.zIndex = '2';
+        oldScreen.style.transform = 'translateX(0) scale(1)';
+        oldScreen.style.filter = 'brightness(1) blur(0px)';
+        oldScreen.style.zIndex = '1';
+      } else {
+        newScreen.style.transform = 'translateX(-20%) scale(0.96)';
+        newScreen.style.filter = 'brightness(0.9) blur(1px)';
+        newScreen.style.zIndex = '1';
+        oldScreen.style.transform = 'translateX(0)';
+        oldScreen.style.zIndex = '2';
+      }
+
+      inner.appendChild(newScreen);
+      inner.offsetHeight; // Flush layout reflow
+
+      // Apply transition properties with iOS Navigation Stack cubic-bezier curve
+      const duration = 450; // 450ms matching SwiftUI push/pop timing
+      const ease = 'cubic-bezier(0.16, 1, 0.3, 1)'; // Snappy Apple Ease Out
+
+      oldScreen.style.transition = `transform ${duration}ms ${ease}, opacity ${duration}ms ${ease}, filter ${duration}ms ${ease}`;
+      newScreen.style.transition = `transform ${duration}ms ${ease}, opacity ${duration}ms ${ease}, filter ${duration}ms ${ease}`;
+      inner.style.transition = `height ${duration}ms ${ease}`;
+
+      // Start transition
+      inner.style.height = `${newHeight}px`;
+
+      if (direction === 'forward') {
+        newScreen.style.transform = 'translateX(0)';
+        oldScreen.style.transform = 'translateX(-20%) scale(0.96)';
+        oldScreen.style.filter = 'brightness(0.9) blur(1px)';
+      } else {
+        oldScreen.style.transform = 'translateX(100%)';
+        newScreen.style.transform = 'translateX(0) scale(1)';
+        newScreen.style.filter = 'brightness(1) blur(0px)';
+      }
+
+      // Initialize step layout and content asynchronously
+      initStep(step, data);
+      lucide.createIcons();
+
+      // Clean up after animation finishes
+      setTimeout(() => {
+        if (newScreen.parentNode === inner) {
+          newScreen.style.position = '';
+          newScreen.style.top = '';
+          newScreen.style.left = '';
+          newScreen.style.width = '';
+          newScreen.style.height = '';
+          newScreen.style.transform = '';
+          newScreen.style.transition = '';
+          newScreen.style.filter = '';
+          newScreen.style.zIndex = '';
+          
+          inner.style.transition = '';
+          inner.style.height = '';
+
+          oldScreen.remove();
+        }
+      }, duration);
+
+      isInitialLoad = false;
+    }
+
+    // --- STEP SPECIFIC SETUP FUNCTIONS ---
+
+    function initStep(step, data) {
+      if (step === 'amount') {
+        setupAmountScreen();
+      } else if (step === 'confirm') {
+        setupConfirmScreen();
+      } else if (step === 'processing') {
+        setupProcessingScreen();
+      } else if (step === 'pin') {
+        setupPinScreen();
+      } else if (step === 'success' || step === 'failure') {
+        setupResultScreen(step === 'success');
+      }
+    }
+
+    // --- 1. AMOUNT SCREEN ---
+    function setupAmountScreen() {
+      const display = document.getElementById('amount-display');
+      const meta = document.getElementById('amount-meta');
+      const btnPay = document.getElementById('btn-pay-now');
+
+      // Stagger-reveal static elements
+      staggerReveal(['amount-recipient-pill'], 60);
+
+      let balanceVisible = false;
+
+      // Apply text-mask / reveal state to the balance row
+      function updateBalanceState(animated = false) {
+        const balVal  = document.getElementById('amount-balance-value');
+        const iconOff = document.getElementById('balance-icon-off');
+        const iconOn  = document.getElementById('balance-icon-on');
+        const eyeBtn  = document.getElementById('btn-balance-eye');
+        if (!balVal) return;
+
+        function applyState() {
+          if (balanceVisible) {
+            balVal.textContent         = `₹${USER_BANK.balance}`;
+            balVal.style.letterSpacing = '0em';
+            balVal.style.fontWeight    = '';
+            balVal.style.color         = isDarkMode ? '#F5F5F5' : '';
+            if (iconOff) iconOff.style.display = 'none';
+            if (iconOn)  iconOn.style.display  = 'block';
+            if (eyeBtn)  eyeBtn.style.color    = '#6B7280';
+          } else {
+            balVal.textContent         = '₹ ••••••';
+            balVal.style.letterSpacing = '0.2em';
+            balVal.style.fontWeight    = '700';
+            balVal.style.color         = isDarkMode ? '#8E8E93' : '';
+            if (iconOff) iconOff.style.display = 'block';
+            if (iconOn)  iconOn.style.display  = 'none';
+            if (eyeBtn)  eyeBtn.style.color    = '';
+          }
+        }
+
+        if (animated) {
+          // Cross-fade: scale-out → swap text → spring back
+          balVal.style.opacity   = '0';
+          balVal.style.transform = 'scale(0.85)';
+          setTimeout(() => {
+            applyState();
+            balVal.style.opacity   = '1';
+            balVal.style.transform = 'scale(1)';
+          }, 130);
+        } else {
+          applyState();
+          balVal.style.opacity   = '1';
+          balVal.style.transform = 'scale(1)';
+        }
+      }
+
+      function updateUI(inputType = 'set') {
+        const numeric = Number(enteredAmount);
+        const nextAmountText = `₹${formatAmount(enteredAmount)}`;
+        const isDelete = inputType === 'delete';
+
+        // Avoid width/measurement jitter while deleting quickly.
+        if (isDelete) {
+          display.textContent = nextAmountText;
+        } else {
+          Calligraph.animate(display, nextAmountText, { variant: 'number', animation: 'snappy' });
+        }
+        
+        // Font sizing based on text length to prevent clipping
+        if (enteredAmount.length > 5) {
+          display.classList.add('text-[56px]');
+          display.classList.remove('text-[72px]');
+        } else {
+          display.classList.add('text-[72px]');
+          display.classList.remove('text-[56px]');
+        }
+
+        const btnSpan  = btnPay.querySelector('span');
+        const balRow   = document.getElementById('amount-balance-row');
+
+        if (numeric > MAX_AMOUNT) {
+          // Show error meta, hide balance row
+          if (balRow) balRow.style.display = 'none';
+          meta.style.display = '';
+          Calligraph.animate(meta, "Daily UPI limit is ₹1,00,000", { variant: 'text', animation: 'smooth' });
+          meta.className = "cg-container font-secondary text-[13px] font-medium text-red-500 transition-colors";
+          btnPay.disabled = true;
+          Calligraph.animate(btnSpan, "Pay", { variant: 'text', animation: 'smooth' });
+        } else {
+          // Show balance row, hide error meta
+          meta.style.display = 'none';
+          meta.className = "font-secondary text-[13px] font-medium text-gray-500 transition-colors";
+          meta.textContent = '';
+          if (balRow) balRow.style.display = 'flex';
+          btnPay.disabled = numeric <= 0;
+          if (numeric <= 0) {
+            Calligraph.animate(btnSpan, "Pay", { variant: 'text', animation: 'smooth' });
+          } else {
+            Calligraph.animate(btnSpan, `Pay ₹${formatAmount(enteredAmount)}`, { variant: 'number', animation: 'snappy' });
+          }
+        }
+      }
+
+      // Render Staggered Dialpad
+      const dialpadContainer = document.getElementById('dialpad-amount');
+      const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'delete'];
+      
+      dialpadContainer.innerHTML = '';
+      keys.forEach((key, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `dial-btn h-[64px] sm:h-[80px] w-full rounded-[24px] bg-[#F3F4F6] flex items-center justify-center text-[24px] sm:text-[30px] font-semibold font-numbers transition-colors text-[#0F0F0F] key-enter opacity-0`;
+        btn.style.animationDelay = `${idx * 15}ms`;
+        // Delete and decimal get a secondary (darker) style in dark mode
+        if (key === '.' || key === 'delete') btn.classList.add('dial-btn-secondary');
+
+        if (key === 'delete') {
+          btn.innerHTML = `<i data-lucide="delete" class="w-8 h-8 text-zinc-900"></i>`;
+        } else {
+          btn.textContent = key;
+        }
+
+        btn.addEventListener('click', () => {
+          if (key === 'delete') {
+            enteredAmount = enteredAmount.slice(0, -1) || '0';
+          } else if (key === '.') {
+            if (!enteredAmount.includes('.')) {
+              enteredAmount += '.';
+            }
+          } else {
+            if (enteredAmount === '0') {
+              enteredAmount = key;
+            } else if (enteredAmount.length < 8) {
+              enteredAmount += key;
+            }
+          }
+          updateUI(key === 'delete' ? 'delete' : 'input');
+        });
+
+        dialpadContainer.appendChild(btn);
+      });
+
+      btnPay.addEventListener('click', () => {
+        goToStep('confirm');
+      });
+
+      // --- Eye toggle: reveal / hide balance ---
+      const eyeBtn = document.getElementById('btn-balance-eye');
+      if (eyeBtn) {
+        eyeBtn.addEventListener('click', () => {
+          balanceVisible = !balanceVisible;
+
+          // Spring squish on the whole button
+          eyeBtn.classList.remove('eye-squish');
+          void eyeBtn.offsetWidth; // force reflow so re-adding the class triggers
+          eyeBtn.classList.add('eye-squish');
+
+          updateBalanceState(true);
+        });
+      }
+
+      // --- Dark mode toggle ---
+      const darkBtn  = document.getElementById('btn-dark-toggle');
+      const darkIcon = document.getElementById('dark-toggle-icon');
+
+      // Sync icon to current state every time the screen is shown
+      if (darkIcon) {
+        darkIcon.setAttribute('data-lucide', isDarkMode ? 'sun' : 'moon');
+        lucide.createIcons({ nodes: [darkBtn] });
+      }
+
+      if (darkBtn) {
+        darkBtn.addEventListener('click', () => {
+          isDarkMode = !isDarkMode;
+          applyDarkMode();
+          updateBalanceState();
+
+          // Spring squish on the button
+          darkBtn.classList.remove('eye-squish');   // reuse same spring keyframe
+          void darkBtn.offsetWidth;
+          darkBtn.classList.add('eye-squish');
+
+          // Swap moon ↔ sun
+          const icon = document.getElementById('dark-toggle-icon');
+          if (icon) {
+            icon.setAttribute('data-lucide', isDarkMode ? 'sun' : 'moon');
+            lucide.createIcons({ nodes: [darkBtn] });
+          }
+        });
+      }
+
+      updateUI('init');
+      lucide.createIcons();
+      // Re-sync dark icon after lucide replaces <i> → <svg>
+      const di = document.getElementById('dark-toggle-icon');
+      if (di) {
+        di.setAttribute('data-lucide', isDarkMode ? 'sun' : 'moon');
+        lucide.createIcons({ nodes: [document.getElementById('btn-dark-toggle')] });
+      }
+      // Initialise balance state AFTER lucide has replaced <i> tags with <svg>
+      updateBalanceState();
+    }
+
+    // --- 2. CONFIRM SCREEN ---
+    function setupConfirmScreen() {
+      const confirmAmt = document.getElementById('confirm-amount');
+      Calligraph.animate(confirmAmt, `₹${formatAmount(enteredAmount)}`, { variant: 'number', animation: 'snappy', initial: true });
+
+      // Stagger-reveal confirm screen elements
+      staggerReveal([
+        'confirm-avatar',
+        'confirm-pay-label',
+        'confirm-to-label',
+        'confirm-info-card',
+        'confirm-secured',
+        'confirm-buttons'
+      ], 50, 60);
+
+      document.getElementById('btn-confirm-back').addEventListener('click', () => {
+        goToStep('amount');
+      });
+
+      document.getElementById('btn-confirm-cancel').addEventListener('click', () => {
+        goToStep('amount');
+      });
+
+      document.getElementById('btn-confirm-pay').addEventListener('click', () => {
+        goToStep('processing');
+      });
+    }
+
+    // --- 3. PROCESSING SCREEN ---
+    function setupProcessingScreen() {
+      const label = document.getElementById('processing-label');
+
+      // Logo bounces in on entry
+      const logoWrap = document.getElementById('processing-logo-wrap');
+      if (logoWrap) logoWrap.classList.add('anim-logo-bounce');
+
+      Calligraph.animate(label, "Connecting securely", { variant: 'text', animation: 'smooth', drift: { x: 0, y: 0 }, trend: 1, stagger: 0.015, initial: true });
+
+      // Stagger the "Please don't close" subtitle
+      const processingSubtitle = document.querySelector('#payment-inner .font-secondary.text-gray-500.text-center');
+      if (processingSubtitle) {
+        processingSubtitle.style.setProperty('--anim-delay', '200ms');
+        processingSubtitle.classList.add('anim-slide-up');
+      }
+
+      const labels = ["Connecting securely", "Verifying bank", "Ready for UPI PIN"];
+
+      // Cross-fade helper: replaces the current processing logo with a new one.
+      function swapProcessingLogo(newSrc, newAlt) {
+        const logoEl = document.getElementById('processing-logo');
+        if (!logoEl) return;
+
+        // Fade out current logo
+        logoEl.classList.remove('logo-fade-in');
+        logoEl.classList.add('logo-fade-out');
+
+        setTimeout(() => {
+          if (!document.getElementById('processing-logo')) return;
+          logoEl.src = newSrc;
+          logoEl.alt = newAlt;
+          logoEl.classList.remove('logo-fade-out');
+          logoEl.classList.add('logo-fade-in');
+        }, 350); // wait for fade-out to complete before swapping src
+      }
+
+      labels.slice(1).forEach((text, index) => {
+        setTimeout(() => {
+          if (currentStep === 'processing') {
+            Calligraph.animate(label, text, { variant: 'text', animation: 'smooth', drift: { x: 0, y: 0 }, trend: 1, stagger: 0.015 });
+
+            // At "Verifying bank" (index 0 of slice) → swap to SBI logo
+            if (index === 0) {
+              swapProcessingLogo('images/sbi.svg', 'State Bank of India');
+            }
+          }
+        }, 800 * (index + 1));
+      });
+
+      setTimeout(() => {
+        if (currentStep === 'processing') {
+          goToStep('pin');
+        }
+      }, 2500);
+    }
+
+    // --- 4. PIN SCREEN ---
+    function setupPinScreen() {
+      enteredPin = '';
+      isPinSubmitting = false;
+      const dotsContainer = document.getElementById('pin-dots-container');
+      const pinStatus = document.getElementById('pin-status');
+      const pinStatusIcon = document.getElementById('pin-status-icon');
+      const pinStatusText = document.getElementById('pin-status-text');
+
+      const pinAmountEl = document.getElementById('pin-amount');
+      Calligraph.animate(pinAmountEl, `₹${formatAmount(enteredAmount)}`, { variant: 'number', animation: 'snappy', initial: true });
+
+      Calligraph.animate(pinStatusText, "PIN is encrypted", { variant: 'text', animation: 'smooth', initial: true });
+
+      // Stagger-reveal PIN screen static elements
+      staggerReveal([
+        'pin-pay-label',
+        'pin-to-label',
+        'pin-upi-label',
+        'pin-dots-container',
+        'pin-info-box'
+      ], 60, 55);
+
+      function updateDots() {
+        for (let i = 0; i < 4; i++) {
+          const dot = dotsContainer.querySelector(`[data-dot="${i}"]`);
+          const isFilled = i < enteredPin.length;
+          const digit = enteredPin[i];
+          
+          const targetKey = isFilled ? `mask-${i}` : 'empty';
+
+          // Check currently rendered content
+          const currentContent = dot.querySelector('.pin-dot-content');
+          const currentKey = currentContent ? currentContent.dataset.key : 'empty';
+
+          // Update active states
+          const isCurrent = enteredPin.length === i;
+          dot.style.transition = 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s';
+          if (isCurrent) {
+            dot.style.transform = 'scale(1.08)';
+            dot.style.backgroundColor = '#E5E7EB';
+          } else {
+            dot.style.transform = 'scale(1)';
+            dot.style.backgroundColor = '#F3F4F6';
+          }
+
+          if (currentKey !== targetKey) {
+            // Animate exit for old content
+            if (currentContent) {
+              currentContent.classList.remove('pin-dot-wobble');
+              currentContent.classList.add('pin-dot-exit');
+              const tempContent = currentContent;
+              setTimeout(() => {
+                tempContent.remove();
+              }, 150);
+            }
+
+            // Animate entry for new content
+            if (isFilled) {
+              const newContent = document.createElement('div');
+              newContent.className = 'pin-dot-content pin-dot-wobble absolute inset-0 flex items-center justify-center pointer-events-none select-none';
+              newContent.dataset.key = targetKey;
+              newContent.innerHTML = `<span class="font-primary text-[54px] text-[#0F0F0F] font-black" style="line-height: 1; margin-top: 10px;">*</span>`;
+
+              dot.appendChild(newContent);
+            }
+          }
+        }
+      }
+
+      function submitPin() {
+        isPinSubmitting = true;
+        
+        // Disable dialpad key taps
+        const keys = document.querySelectorAll('#dialpad-pin button');
+        keys.forEach(k => k.disabled = true);
+
+        // Update status UI
+        pinStatus.className = "flex items-center gap-2 text-gray-400 text-[12px] font-medium";
+        pinStatusIcon.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>`;
+        Calligraph.animate(pinStatusText, "Verifying PIN securely", { variant: 'text', animation: 'smooth' });
+
+        // Verification Delay
+        setTimeout(() => {
+          if (enteredPin === SUCCESS_PIN) {
+            goToStep('success');
+          } else {
+            // Trigger Shake Animation
+            dotsContainer.classList.add('shake-error');
+            
+            pinStatus.className = "flex items-center gap-1.5 text-red-500 text-[12px] font-semibold";
+            pinStatusIcon.innerHTML = `<i data-lucide="info" class="w-4 h-4 text-red-500"></i>`;
+            Calligraph.animate(pinStatusText, "Incorrect PIN. Verifying failure.", { variant: 'text', animation: 'smooth' });
+            lucide.createIcons();
+
+            setTimeout(() => {
+              goToStep('failure');
+            }, 800);
+          }
+        }, 1200);
+      }
+
+      // Render Dialpad (no decimal keys)
+      const dialpadContainer = document.getElementById('dialpad-pin');
+      const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'delete'];
+      
+      dialpadContainer.innerHTML = '';
+      keys.forEach((key, idx) => {
+        const btn = document.createElement('button');
+        if (key === '') {
+          btn.className = "h-[64px] sm:h-[80px] w-full invisible pointer-events-none";
+        } else {
+          btn.className = `dial-btn h-[64px] sm:h-[80px] w-full rounded-[24px] bg-[#F3F4F6] flex items-center justify-center text-[24px] sm:text-[30px] font-semibold font-numbers transition-colors text-[#0F0F0F] key-enter opacity-0`;
+          btn.style.animationDelay = `${idx * 15}ms`;
+          // Delete gets darker secondary style in dark mode
+          if (key === 'delete') btn.classList.add('dial-btn-secondary');
+
+          if (key === 'delete') {
+            btn.innerHTML = `<i data-lucide="delete" class="w-8 h-8 text-[#0F0F0F]"></i>`;
+          } else {
+            btn.textContent = key;
+          }
+
+          btn.addEventListener('click', () => {
+            if (isPinSubmitting) return;
+            if (key === 'delete') {
+              enteredPin = enteredPin.slice(0, -1);
+            } else if (enteredPin.length < 4) {
+              enteredPin += key;
+            }
+            updateDots();
+            
+            if (enteredPin.length === 4) {
+              submitPin();
+            }
+          });
+        }
+        dialpadContainer.appendChild(btn);
+      });
+
+      document.getElementById('btn-pin-back').addEventListener('click', () => {
+        goToStep('confirm');
+      });
+
+      updateDots();
+      lucide.createIcons();
+    }
+
+    // --- 5. RESULT (SUCCESS / FAILURE) SCREEN ---
+    function setupResultScreen(success) {
+      const badge = document.getElementById('result-badge');
+      const title = document.getElementById('result-title');
+      const subtitle = document.getElementById('result-subtitle');
+      const amount = document.getElementById('result-receipt-amount');
+      const tx = document.getElementById('result-receipt-tx');
+      const txLabel = document.getElementById('result-receipt-tx-label');
+      const actions = document.getElementById('result-actions');
+
+      amount.textContent = `₹${formatAmount(enteredAmount)}`;
+
+      // Apply badge colors and icon matching the React design
+      if (success) {
+        badge.className = "w-[100px] h-[100px] rounded-full flex items-center justify-center mb-8 bg-[#E6F4EA] text-[#1E4620] anim-badge-spring";
+        badge.innerHTML = `<svg class="w-12 h-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path class="checkmark" d="M20 6 9 17l-5-5"/></svg>`;
+        
+        title.textContent = "Payment successful";
+        subtitle.textContent = `₹${formatAmount(enteredAmount)} was sent to ${RECIPIENT.name}`;
+        
+        txLabel.textContent = "Transaction ID";
+        const txIdVal = `UPI${Math.floor(1000000000 + Math.random() * 9000000000)}`;
+        tx.textContent = txIdVal;
+
+        actions.innerHTML = `
+          <button id="btn-done" class="w-full py-[18px] rounded-full bg-[#0F0F0F] font-primary font-semibold text-[16px] text-white transition-colors btn-spring">
+            Done
+          </button>
+        `;
+        document.getElementById('btn-done').addEventListener('click', restart);
+
+      } else {
+        badge.className = "w-[100px] h-[100px] rounded-full flex items-center justify-center mb-8 bg-[#FEE2E2] text-[#991B1B] anim-badge-spring";
+        badge.innerHTML = `<svg class="w-12 h-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path class="crossmark" d="m15 9-6 6"/><path class="crossmark" d="m9 9 6 6"/></svg>`;
+
+        title.textContent = "Payment failed";
+        subtitle.textContent = "Your bank declined the UPI PIN. No money was deducted.";
+        
+        txLabel.textContent = "Attempted";
+        const now = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }).format(new Date());
+        tx.textContent = now;
+
+        actions.innerHTML = `
+          <div class="grid grid-cols-[1fr_1.5fr] gap-3">
+            <button id="btn-done-cancel" class="py-[18px] rounded-full bg-[#F3F4F6] font-primary font-semibold text-[16px] text-[#0F0F0F] btn-spring">
+              Cancel
+            </button>
+            <button id="btn-retry" class="py-[18px] flex items-center justify-center gap-2 rounded-full bg-[#0F0F0F] font-primary font-semibold text-[16px] text-white btn-spring">
+              <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+              <span>Retry PIN</span>
+            </button>
+          </div>
+        `;
+        document.getElementById('btn-done-cancel').addEventListener('click', restart);
+        document.getElementById('btn-retry').addEventListener('click', () => {
+          goToStep('pin');
+        });
+      }
+
+      // Stagger-reveal title, subtitle, receipt card, actions after badge springs in
+      staggerReveal(['result-title', 'result-subtitle', 'result-receipt-card', 'result-actions'], 180, 80);
+
+      lucide.createIcons();
+    }
+
+    function restart() {
+      enteredAmount = '2450';
+      goToStep('amount');
+    }
+
+
+
+    // --- INITIALIZE APPLICATION ---
+    window.addEventListener('DOMContentLoaded', () => {
+      const deviceGate = document.getElementById('device-gate');
+      const btnGateContinue = document.getElementById('btn-gate-continue');
+      const btnGateBack = document.getElementById('btn-gate-back');
+      const isDesktopOrTablet = window.matchMedia('(min-width: 640px)').matches;
+
+      function showDeviceGate() {
+        if (!deviceGate) return;
+        deviceGate.classList.remove('hidden');
+        deviceGate.classList.add('flex', 'fade-in');
+        document.body.style.overflow = 'hidden';
+        lucide.createIcons({ nodes: [deviceGate] });
+      }
+
+      function hideDeviceGate() {
+        if (!deviceGate) return;
+        deviceGate.classList.add('hidden');
+        deviceGate.classList.remove('flex', 'fade-in');
+        document.body.style.overflow = '';
+      }
+
+      if (btnGateContinue) {
+        btnGateContinue.addEventListener('click', hideDeviceGate);
+      }
+
+      if (btnGateBack) {
+        btnGateBack.addEventListener('click', () => {
+          window.location.href = 'https://saishankar.xyz/experiments/';
+        });
+      }
+
+      if (isDesktopOrTablet) {
+        showDeviceGate();
+      }
+
+      // Go to amount screen immediately
+      goToStep('amount');
+    });
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" fill="none">
+  <!-- Background pill shape -->
+  <rect width="200" height="80" rx="12" fill="#FFFFFF"/>
+
+  <!-- NPCI text in dark blue -->
+  <text x="16" y="34" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="26" fill="#1A237E" letter-spacing="1">NPCI</text>
+
+  <!-- UPI coloured bar -->
+  <rect x="16" y="42" width="60" height="5" rx="2.5" fill="#F97316"/>
+
+  <!-- Tagline -->
+  <text x="16" y="62" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="9" fill="#5C6BC0" letter-spacing="0.5">National Payments Corporation of India</text>
+
+  <!-- Right: abstract concentric arcs representing connectivity -->
+  <circle cx="170" cy="40" r="18" stroke="#1A237E" stroke-width="3" fill="none" opacity="0.15"/>
+  <circle cx="170" cy="40" r="12" stroke="#1A237E" stroke-width="3" fill="none" opacity="0.3"/>
+  <circle cx="170" cy="40" r="6"  stroke="#F97316" stroke-width="3" fill="none" opacity="0.8"/>
+  <circle cx="170" cy="40" r="2"  fill="#F97316"/>
+</svg>

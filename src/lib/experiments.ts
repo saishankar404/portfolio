@@ -34,6 +34,15 @@ export const experimentsList: Experiment[] = [
     path: "/experiments/03_card_slider/index.html",
     image: "/assets/experiment_covers/03-cover.png",
     newTab: true
+  },
+  {
+    id: "04_payment_flow_upi",
+    title: "upi payment flow",
+    category: "interactions",
+    description: "an interactive upi payment flow experiment exploring clean transaction steps, status feedback, and mobile-first payment interactions.",
+    path: "/experiments/04_payment_flow_upi/index.html",
+    image: "/assets/experiment_covers/04-cover.png",
+    newTab: true
   }
 ];
 
