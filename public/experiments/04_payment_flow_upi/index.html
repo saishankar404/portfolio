@@ -62,6 +62,33 @@
       overflow-x: hidden;
     }
 
+    /* iOS Safari can clip bottom controls behind browser UI; allow page scroll there */
+    body.safari-scroll-fix {
+      min-height: 100svh;
+      height: auto;
+      align-items: flex-start;
+      overflow-y: auto;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+    }
+
+    body.safari-scroll-fix #payment-card-container {
+      min-height: 100svh;
+      height: auto;
+    }
+
+    body.safari-scroll-fix #payment-inner {
+      min-height: 100svh;
+      height: auto;
+    }
+
+    /* Prevent Safari flexbox image squish on avatar elements */
+    #amount-recipient-pill img,
+    #confirm-avatar {
+      flex-shrink: 0;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+    }
+
     @media (min-width: 640px) {
       body {
         background-color: #f4f4f5;
@@ -530,7 +557,7 @@
 
       <!-- Recipient Pill -->
       <div id="amount-recipient-pill" class="shine-card mx-auto flex items-center gap-3 bg-[#F9FAFB] border border-[#F3F4F6] p-1.5 pr-5 rounded-full w-max mb-12">
-        <img src="images/pfp.jpeg" alt="Aarav Mehta" class="w-10 h-10 rounded-full object-cover" />
+        <img src="images/pfp.jpeg" alt="Aarav Mehta" class="w-10 h-10 rounded-full object-cover flex-shrink-0" />
         <div class="flex flex-col justify-center mr-2 text-left">
           <span class="font-primary text-[15px] font-bold text-[#0F0F0F] leading-tight">Aarav Mehta</span>
           <span class="font-secondary text-[11px] text-gray-500 leading-tight">aarav.mehta@okhdfcbank</span>
@@ -589,7 +616,7 @@
       </div>
 
       <div class="flex flex-col flex-grow py-8">
-        <img id="confirm-avatar" src="images/pfp.jpeg" alt="Aarav Mehta" class="mx-auto mb-6 w-16 h-16 rounded-2xl object-cover border border-zinc-100 shadow-sm" />
+        <img id="confirm-avatar" src="images/pfp.jpeg" alt="Aarav Mehta" class="mx-auto mb-6 w-16 h-16 rounded-2xl object-cover border border-zinc-100 shadow-sm flex-shrink-0" />
 
         <p id="confirm-pay-label" class="text-center font-secondary text-[12px] font-medium text-gray-500 uppercase tracking-widest mb-1">Pay</p>
         <h1 id="confirm-amount" class="text-center font-numbers text-[56px] font-bold tracking-tighter text-[#0F0F0F] leading-none mb-3">₹2,450</h1>
@@ -1899,6 +1926,13 @@
 
     // --- INITIALIZE APPLICATION ---
     window.addEventListener('DOMContentLoaded', () => {
+      const ua = navigator.userAgent;
+      const isSafariEngine = /Safari/i.test(ua) && !/Chrome|CriOS|FxiOS|EdgiOS|OPiOS|SamsungBrowser/i.test(ua);
+      const isAppleMobile = /iPhone|iPad|iPod/i.test(ua);
+      if (isSafariEngine && isAppleMobile) {
+        document.body.classList.add('safari-scroll-fix');
+      }
+
       const deviceGate = document.getElementById('device-gate');
       const btnGateContinue = document.getElementById('btn-gate-continue');
       const btnGateBack = document.getElementById('btn-gate-back');
