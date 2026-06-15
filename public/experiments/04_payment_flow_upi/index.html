@@ -443,6 +443,7 @@
     #payment-card-container.dark-mode #pin-pay-label { color: #8E8E93 !important; }
     #payment-card-container.dark-mode #pin-to-label { color: #8E8E93 !important; }
     #payment-card-container.dark-mode #pin-upi-label { color: #5A5A5E !important; }
+    #payment-card-container.dark-mode #pin-demo-hint { color: #6E6E73 !important; }
     #payment-card-container.dark-mode #pin-dots-container [data-dot] { background-color: #2A2A2A !important; }
     #payment-card-container.dark-mode #pin-info-box {
       background-color: #1A1608 !important;
@@ -670,7 +671,8 @@
         <h1 id="pin-amount" class="font-numbers font-bold text-[48px] text-[#0F0F0F] leading-none mb-2">₹2,450</h1>
         <p id="pin-to-label" class="font-secondary text-[14px] text-gray-500 mb-8">to <span class="font-semibold text-[#0F0F0F]">Aarav Mehta</span></p>
 
-        <p id="pin-upi-label" class="font-secondary text-[12px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-5">Enter UPI PIN</p>
+        <p id="pin-upi-label" class="font-secondary text-[12px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-1">Enter UPI PIN</p>
+        <p id="pin-demo-hint" class="font-secondary text-[11px] text-gray-400 mb-4">hint: demo pin is 2580</p>
 
         <!-- PIN Dot Indicators -->
         <div id="pin-dots-container" class="flex justify-center gap-4 sm:gap-5 mb-8 w-full">
@@ -1693,6 +1695,7 @@
         'pin-pay-label',
         'pin-to-label',
         'pin-upi-label',
+        'pin-demo-hint',
         'pin-dots-container',
         'pin-info-box'
       ], 60, 55);
