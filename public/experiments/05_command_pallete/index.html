@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acme · Command Palette</title>
+    <meta name="description" content="A keyboard-first command palette demo — geometric, mono-flecked, alert-red focus. Press ⌘K to open." />
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Acme · Command Palette" />
+    <meta property="og:description" content="Geometric command palette demo. Press ⌘K to open." />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+    
+    <!-- Tailwind CSS browser compilation CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              display: ['Figtree', 'system-ui', 'sans-serif'],
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+              mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+            },
+            colors: {
+              background: 'var(--background)',
+              foreground: 'var(--foreground)',
+              card: 'var(--card)',
+              primary: 'var(--primary)',
+              secondary: 'var(--secondary)',
+              border: 'var(--border)',
+            }
+          }
+        }
+      }
+    </script>
+    
+    <!-- Inline styles for custom theme variables and keyframe animations -->
+    <style>
+      :root {
+        --background: #fdfdfc;
+        --foreground: #0e0d0b;
+        --card: #ffffff;
+        --primary: #ea4b4b;
+        --secondary: #ede7e3;
+        --border: #e4e4e7;
+
+        /* Selection and opacity custom variables */
+        --item-selected-bg: rgba(14, 13, 11, 0.05);
+        --foreground-70: rgba(14, 13, 11, 0.7);
+        --foreground-60: rgba(14, 13, 11, 0.6);
+        --foreground-50: rgba(14, 13, 11, 0.5);
+      }
+      .dark {
+        --background: #0e0d0b;
+        --foreground: #fdfdfc;
+        --card: #1a1917;
+        --primary: #ea4b4b;
+        --secondary: #25231f;
+        --border: #2a2825;
+
+        /* Selection and opacity custom dark variables */
+        --item-selected-bg: rgba(253, 253, 252, 0.05);
+        --foreground-70: rgba(253, 253, 252, 0.7);
+        --foreground-60: rgba(253, 253, 252, 0.6);
+        --foreground-50: rgba(253, 253, 252, 0.5);
+      }
+      
+      body {
+        background-color: var(--background);
+        color: var(--foreground);
+        font-family: 'Inter', system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      /* Blinking input caret animations */
+      @keyframes caret-blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
+      }
+      .animate-caret-blink {
+        animation: caret-blink 1s step-end infinite;
+      }
+
+      /* Pulse dot animations */
+      @keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.85); }
+      }
+      .animate-pulse-dot {
+        animation: pulse-dot 1.4s ease-in-out infinite;
+      }
+    </style>
+    
+    <!-- GSAP CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  </head>
+  <body class="relative min-h-screen bg-background text-foreground transition-colors duration-300">
+    <!-- SVG Grain Overlay -->
+    <div aria-hidden class="fixed inset-0 z-[1] pointer-events-none mix-blend-multiply opacity-[0.05]" id="grain-overlay">
+      <svg class="h-full w-full" xmlns="http://www.w3.org/2000/svg">
+        <filter id="grain-noise">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#grain-noise)" />
+      </svg>
+    </div>
+
+    <!-- Centered Acme OS Layout wrapper -->
+    <div class="relative z-10 flex min-h-screen flex-col justify-center items-center w-full">
+      <!-- Main Layout (Fullscreen Centered Hero) -->
+      <main class="flex-1 flex flex-col items-center justify-center text-center px-6 select-none cursor-pointer open-palette-btn group w-full">
+        <!-- Hero Section (Scaled Up Acme OS) -->
+        <h1 class="font-display text-6xl font-semibold tracking-tight text-zinc-400 dark:text-zinc-500 md:text-7xl lg:text-[90px] leading-none transition-colors duration-300">
+          Acme OS
+        </h1>
+        <p class="mt-6 font-mono text-[14px] md:text-[16px] text-zinc-300 dark:text-zinc-650 tracking-wide transition-colors duration-300 group-hover:text-foreground/80 duration-200">
+          Press <span class="kbd-mod-sym">⌘</span>K to open command palette
+        </p>
+      </main>
+    </div>
+
+    <!-- Modal Dialog Command Palette -->
+    <div id="modal-container" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
+      <!-- Backdrop -->
+      <div id="modal-backdrop" class="fixed inset-0 backdrop-blur-[2px] opacity-0" style="background: rgba(14, 13, 11, 0.45)"></div>
+
+      <!-- Content Surface -->
+      <div id="modal-content" class="fixed left-1/2 top-[14vh] w-[calc(100vw-20px)] max-w-[640px] -translate-x-1/2 opacity-0 focus:outline-none">
+        <div class="relative w-full overflow-hidden bg-card text-foreground border border-border shadow-2xl" id="modal-palette-surface">
+          <!-- Inline Grain Overlay for card background -->
+          <div aria-hidden class="absolute inset-0 z-[1] pointer-events-none mix-blend-multiply opacity-[0.03]" id="modal-grain">
+            <svg class="h-full w-full" xmlns="http://www.w3.org/2000/svg">
+              <rect width="100%" height="100%" filter="url(#grain-noise)" />
+            </svg>
+          </div>
+
+          <!-- Command Palette Inner -->
+          <div class="relative z-[3] flex w-full flex-col" id="modal-palette-inner">
+            <!-- Header Input -->
+            <div class="flex items-center gap-3 border-b border-border px-4 py-3.5">
+              <span class="font-mono text-sm text-primary flex items-center">
+                &gt;
+              </span>
+              <input
+                type="text"
+                id="modal-search-input"
+                placeholder="Type a command or search…"
+                class="flex-1 bg-transparent font-sans text-base text-foreground outline-none placeholder:text-muted-foreground w-full"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <svg class="h-4 w-4 text-[var(--foreground-50)] shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+              </svg>
+            </div>
+
+            <!-- List of Commands -->
+            <div id="modal-list-container" class="list-container max-h-[420px] overflow-y-auto px-2 py-2 scrollbar-thin">
+              <!-- Rendered dynamically -->
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between gap-4 border-t border-border px-4 py-3 font-mono text-[10px] uppercase tracking-widest text-[var(--foreground-50)]" style="background: var(--secondary)">
+              <div class="flex items-center gap-4">
+                <span class="flex items-center gap-1"><span class="text-xs">↑↓</span> navigate</span>
+                <span class="flex items-center gap-1"><span class="text-xs">↵</span> select</span>
+              </div>
+              <div class="flex items-center gap-2 text-[var(--foreground-70)]">
+                <kbd class="flex h-5 items-center bg-card border border-border px-1.5 font-mono text-[9px] uppercase shadow-sm rounded-xs">
+                  esc
+                </kbd>
+                <span>close</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Controller Scripts -->
+    <script>
+      // --- SVG Icons Definition (Lucide set) ---
+      const ICONS = {
+        "layout-dashboard": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="10" rx="1"/><rect width="7" height="5" x="3" y="14" rx="1"/></svg>`,
+        "line-chart": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>`,
+        "briefcase": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>`,
+        "settings": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>`,
+        "plus-circle": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>`,
+        "arrow-left-right": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>`,
+        "file-text": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>`,
+        "user-plus": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>`,
+        search: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`,
+        users: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+        coins: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><circle cx="8" cy="8" r="6"/><circle cx="18" cy="18" r="4"/><path d="M12 18a6 6 0 0 0-6-6M2 12h2M12 2v2M20 12h2M12 20v2"/></svg>`,
+        sun: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`,
+        "book-open": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+        "log-out": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>`
+      };
+
+      // --- Command Groups Data ---
+      const GROUPS = [
+        {
+          id: "navigation",
+          label: "Navigation",
+          marker: "filled",
+          items: [
+            { id: "nav-dashboard", label: "Go to Dashboard", icon: "layout-dashboard", shortcut: ["⌘", "D"] },
+            { id: "nav-markets", label: "Go to Markets", icon: "line-chart", shortcut: ["⌘", "M"] },
+            { id: "nav-portfolio", label: "Go to Portfolio", icon: "briefcase", shortcut: ["⌘", "P"] },
+            { id: "nav-settings", label: "Go to Settings", icon: "settings", shortcut: ["⌘", ","] }
+          ]
+        },
+        {
+          id: "actions",
+          label: "Actions",
+          marker: "outlined",
+          items: [
+            { id: "act-order", label: "New Order", icon: "plus-circle", shortcut: ["⌘", "N"] },
+            { id: "act-transfer", label: "Transfer Funds", icon: "arrow-left-right", shortcut: ["⌘", "T"] },
+            { id: "act-report", label: "Generate Report", icon: "file-text" },
+            { id: "act-invite", label: "Invite Member", icon: "user-plus" }
+          ]
+        },
+        {
+          id: "search",
+          label: "Search",
+          marker: "filled",
+          items: [
+            { id: "sr-tx", label: "Find Transaction…", icon: "search" },
+            { id: "sr-member", label: "Find Member…", icon: "users" },
+            { id: "sr-asset", label: "Find Asset…", icon: "coins" }
+          ]
+        },
+        {
+          id: "system",
+          label: "System",
+          marker: "outlined",
+          items: [
+            { id: "sys-theme", label: "Toggle Theme", icon: "sun", shortcut: ["⌘", "⇧", "L"] },
+            { id: "sys-docs", label: "Open Docs", icon: "book-open" },
+            { id: "sys-signout", label: "Sign Out", icon: "log-out", destructive: true }
+          ]
+        }
+      ];
+
+      // Count total command actions
+      const TOTAL_COMMANDS = GROUPS.reduce((n, g) => n + g.items.length, 0);
+
+      // Helper to pad number with leading zeros (e.g. 01 / 04)
+      function pad(n) {
+        return n.toString().padStart(2, "0");
+      }
+
+      // Generate HTML for shortcuts
+      function renderShortcutChips(keys) {
+        return `
+          <span class="ml-auto flex items-center gap-1 shrink-0">
+            ${keys
+              .map(
+                (key) => `
+              <kbd class="flex h-5 min-w-5 items-center justify-center bg-secondary border border-border px-1.5 font-mono text-[10px] font-medium text-foreground/80 shadow-sm">
+                ${key}
+              </kbd>
+            `
+              )
+              .join("")}
+          </span>
+        `;
+      }
+
+      // --- Command Palette Controller ---
+      class CommandPaletteController {
+        constructor(options) {
+          this.container = options.container; // wrapper element
+          this.onSelectAction = options.onSelectAction || (() => {});
+          
+          this.activeItemId = null;
+          this.searchQuery = "";
+          this.visibleItems = []; // Flat list of item ids in current view order
+          this.indexMap = new Map(); // id -> { idx, total } in current view
+
+          this.initElements();
+          this.initEvents();
+          this.render();
+        }
+
+        initElements() {
+          this.input = this.container.querySelector("input");
+          this.listContainer = this.container.querySelector(".list-container");
+        }
+
+        initEvents() {
+          // Input search binding
+          this.input.addEventListener("input", (e) => {
+            this.searchQuery = e.target.value.toLowerCase().trim();
+            this.render();
+          });
+
+          // Keyboard navigation
+          this.input.addEventListener("keydown", (e) => {
+            if (this.visibleItems.length === 0) return;
+
+            const currentIndex = this.visibleItems.indexOf(this.activeItemId);
+
+            switch (e.key) {
+              case "ArrowDown":
+                e.preventDefault();
+                const nextIndex = (currentIndex + 1) % this.visibleItems.length;
+                this.setActiveItem(this.visibleItems[nextIndex]);
+                break;
+              case "ArrowUp":
+                e.preventDefault();
+                const prevIndex = (currentIndex - 1 + this.visibleItems.length) % this.visibleItems.length;
+                this.setActiveItem(this.visibleItems[prevIndex]);
+                break;
+              case "Enter":
+                e.preventDefault();
+                if (this.activeItemId) {
+                  this.executeCommand(this.activeItemId);
+                }
+                break;
+            }
+          });
+
+          // Click inside container
+          this.listContainer.addEventListener("click", (e) => {
+            const itemEl = e.target.closest("[data-item-id]");
+            if (itemEl) {
+              const id = itemEl.getAttribute("data-item-id");
+              this.executeCommand(id);
+            }
+          });
+        }
+
+        // Set the selected active item and scroll it into view if needed
+        setActiveItem(id) {
+          this.activeItemId = id;
+          
+          // Update data attributes in the DOM
+          const items = this.listContainer.querySelectorAll("[data-item-id]");
+          items.forEach((item) => {
+            const itemId = item.getAttribute("data-item-id");
+            const isSelected = itemId === id;
+            item.setAttribute("data-selected", isSelected ? "true" : "false");
+            
+            // Update selection classes
+            if (isSelected) {
+              item.classList.add("bg-[var(--item-selected-bg)]");
+              
+              // Show index display
+              const idxEl = item.querySelector(".index-display");
+              if (idxEl) idxEl.classList.remove("hidden");
+              
+              // Hide shortcut display
+              const shortcutEl = item.querySelector(".shortcut-display");
+              if (shortcutEl) {
+                shortcutEl.classList.add("hidden");
+              }
+              
+              // Hide arrow display
+              const arrowEl = item.querySelector(".arrow-display");
+              if (arrowEl) {
+                arrowEl.classList.add("hidden");
+              }
+              
+              // Scroll into view
+              item.scrollIntoView({ block: "nearest", behavior: "auto" });
+            } else {
+              item.classList.remove("bg-[var(--item-selected-bg)]");
+              
+              // Hide index display
+              const idxEl = item.querySelector(".index-display");
+              if (idxEl) idxEl.classList.add("hidden");
+              
+              // Show shortcut display
+              const shortcutEl = item.querySelector(".shortcut-display");
+              if (shortcutEl) {
+                shortcutEl.classList.remove("hidden");
+              }
+              
+              // Show arrow display
+              const arrowEl = item.querySelector(".arrow-display");
+              if (arrowEl) {
+                arrowEl.classList.remove("hidden");
+              }
+            }
+          });
+        }
+
+        // Filter commands and build the list
+        getFilteredGroups() {
+          if (!this.searchQuery) {
+            // Create fresh index maps
+            this.indexMap.clear();
+            GROUPS.forEach((g) => {
+              g.items.forEach((item, idx) => {
+                this.indexMap.set(item.id, { idx: idx + 1, total: g.items.length });
+              });
+            });
+            return GROUPS;
+          }
+
+          const filtered = [];
+          this.indexMap.clear();
+
+          GROUPS.forEach((group) => {
+            const matchingItems = group.items.filter(
+              (item) =>
+                item.label.toLowerCase().includes(this.searchQuery) ||
+                group.label.toLowerCase().includes(this.searchQuery)
+            );
+
+            if (matchingItems.length > 0) {
+              filtered.push({
+                ...group,
+                items: matchingItems
+              });
+              
+              // Map indexes inside this filtered view
+              matchingItems.forEach((item, idx) => {
+                this.indexMap.set(item.id, { idx: idx + 1, total: matchingItems.length });
+              });
+            }
+          });
+
+          return filtered;
+        }
+
+        render() {
+          const filteredGroups = this.getFilteredGroups();
+          
+          // Flat list of visible ids for keyboard mapping
+          this.visibleItems = [];
+          filteredGroups.forEach((g) => {
+            g.items.forEach((item) => this.visibleItems.push(item.id));
+          });
+
+          // Handle Active Item resetting
+          if (this.visibleItems.length > 0) {
+            if (!this.activeItemId || !this.visibleItems.includes(this.activeItemId)) {
+              this.activeItemId = this.visibleItems[0];
+            }
+          } else {
+            this.activeItemId = null;
+          }
+
+          // Render Empty State
+          if (this.visibleItems.length === 0) {
+            this.listContainer.innerHTML = `
+              <div class="py-10 text-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
+                <div class="mx-auto mb-2 h-px w-16 border-t border-dashed border-border"></div>
+                No results
+                <div class="mx-auto mt-2 h-px w-16 border-t border-dashed border-border"></div>
+              </div>
+            `;
+            return;
+          }
+
+          // Render Items Markup
+          let html = "";
+          filteredGroups.forEach((group) => {
+            html += `
+              <div class="pb-2">
+                <!-- Group Title -->
+                <div class="flex items-center gap-2 px-3 pb-1.5 pt-4 font-mono text-[10.5px] uppercase tracking-[0.08em] text-[var(--foreground-50)] select-none">
+                  <span class="inline-block h-1.5 w-1.5 ${
+                    group.marker === "filled" ? "bg-primary" : "border border-primary"
+                  }"></span>
+                  <span>${group.label}</span>
+                </div>
+            `;
+
+            group.items.forEach((item) => {
+              const isSelected = item.id === this.activeItemId;
+              const iconSvg = ICONS[item.icon] || "";
+              const meta = this.indexMap.get(item.id) || { idx: 1, total: 1 };
+              
+              html += `
+                <div
+                  data-item-id="${item.id}"
+                  data-selected="${isSelected ? "true" : "false"}"
+                  class="group relative flex min-h-[44px] cursor-pointer select-none items-center gap-3 px-4 py-2 text-[15px] outline-none transition-colors duration-150 rounded-xs ${
+                    isSelected ? "bg-[var(--item-selected-bg)]" : ""
+                  }"
+                  style="content-visibility: auto;"
+                >
+                  <!-- Icon -->
+                  <span class="shrink-0 transition-transform duration-200 group-hover:scale-110 ${
+                    item.destructive ? "text-primary" : "text-zinc-700 dark:text-zinc-350"
+                  }">
+                    ${iconSvg}
+                  </span>
+
+                  <!-- Label -->
+                  <span class="font-sans ${
+                    item.destructive ? "text-primary font-medium" : "text-foreground"
+                  }">
+                    ${item.label}
+                  </span>
+
+                  <!-- Muted hover indicator/indices -->
+                  <div class="ml-auto flex items-center gap-3">
+                    <!-- Index Counter -->
+                    <span class="index-display font-mono text-[10px] uppercase tracking-wider text-[var(--foreground-50)] ${
+                      isSelected ? "" : "hidden"
+                    }">
+                      ${pad(meta.idx)} / ${pad(meta.total)}
+                    </span>
+
+                    <!-- Hover Arrow when no shortcut -->
+                    ${
+                      !item.shortcut
+                        ? `<span class="arrow-display font-mono text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-150 ${
+                            isSelected ? "hidden" : ""
+                          }">→</span>`
+                        : ""
+                    }
+
+                    <!-- Shortcuts -->
+                    ${
+                      item.shortcut
+                        ? `<div class="shortcut-display ${
+                            isSelected ? "hidden" : "block"
+                          }">${renderShortcutChips(item.shortcut)}</div>`
+                        : ""
+                    }
+                  </div>
+                </div>
+              `;
+            });
+
+            html += `</div>`;
+          });
+
+          this.listContainer.innerHTML = html;
+
+          // Add mouse hover listeners to dynamically shift selection
+          const itemEls = this.listContainer.querySelectorAll("[data-item-id]");
+          itemEls.forEach((el) => {
+            el.addEventListener("mousemove", () => {
+              const id = el.getAttribute("data-item-id");
+              if (this.activeItemId !== id) {
+                this.activeItemId = id;
+                this.setActiveItem(id);
+              }
+            });
+          });
+        }
+
+        executeCommand(id) {
+          if (id === "sys-theme") {
+            toggleDarkMode();
+          }
+          
+          this.onSelectAction(id);
+        }
+
+        focus() {
+          if (this.input) {
+            this.input.focus();
+          }
+        }
+
+        reset() {
+          this.searchQuery = "";
+          if (this.input) this.input.value = "";
+          this.render();
+        }
+      }
+
+      // --- Dark/Light Mode Management ---
+      function initDarkMode() {
+        const userPreference = localStorage.getItem("theme");
+        const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        
+        if (userPreference === "dark" || (!userPreference && systemPrefersDark)) {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+      }
+
+      function toggleDarkMode() {
+        const isDark = document.documentElement.classList.toggle("dark");
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+      }
+
+      // --- Modal Command Palette Controls ---
+      let modalController = null;
+      let isModalOpen = false;
+
+      function openModal() {
+        if (isModalOpen) return;
+        isModalOpen = true;
+
+        const modal = document.getElementById("modal-container");
+        const backdrop = document.getElementById("modal-backdrop");
+        const content = document.getElementById("modal-content");
+        
+        modal.classList.remove("hidden");
+        
+        if (modalController) {
+          modalController.reset();
+        }
+        
+        document.body.classList.add("overflow-hidden");
+
+        gsap.killTweensOf([backdrop, content]);
+        
+        gsap.fromTo(
+          backdrop,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.25, ease: "power2.out" }
+        );
+
+        gsap.fromTo(
+          content,
+          { opacity: 0, scale: 0.96, y: 15 },
+          {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 0.25,
+            ease: "power3.out",
+            onComplete: () => {
+              if (modalController) {
+                modalController.focus();
+              }
+            }
+          }
+        );
+      }
+
+      function closeModal() {
+        if (!isModalOpen) return;
+        isModalOpen = false;
+
+        const modal = document.getElementById("modal-container");
+        const backdrop = document.getElementById("modal-backdrop");
+        const content = document.getElementById("modal-content");
+
+        document.body.classList.remove("overflow-hidden");
+
+        gsap.killTweensOf([backdrop, content]);
+
+        gsap.to(content, {
+          opacity: 0,
+          scale: 0.96,
+          y: 10,
+          duration: 0.2,
+          ease: "power2.in"
+        });
+
+        gsap.to(backdrop, {
+          opacity: 0,
+          duration: 0.2,
+          ease: "power2.in",
+          onComplete: () => {
+            modal.classList.add("hidden");
+          }
+        });
+      }
+
+      // --- Global Event Init ---
+      document.addEventListener("DOMContentLoaded", () => {
+        initDarkMode();
+
+        // Platform format keys
+        const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+        const modSymbol = isMac ? "⌘" : "Ctrl";
+        
+        document.querySelectorAll(".kbd-mod-sym").forEach((el) => {
+          el.textContent = modSymbol;
+        });
+
+        // Initialize Modal Controller
+        const modalWrapper = document.getElementById("modal-container");
+        if (modalWrapper) {
+          modalController = new CommandPaletteController({
+            container: modalWrapper,
+            onSelectAction: (id) => {
+              if (id !== "sys-theme") {
+                closeModal();
+              }
+            }
+          });
+
+          document.getElementById("modal-backdrop").addEventListener("click", closeModal);
+        }
+
+        // Open palette button listeners
+        document.querySelectorAll(".open-palette-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            // Prevent event from bubbling if clicking on children that might trigger other actions
+            if (e.target.closest("input, select, textarea")) return;
+            openModal();
+          });
+        });
+
+        // Global Key binds
+        document.addEventListener("keydown", (e) => {
+          // ⌘K / Ctrl+K
+          if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            if (isModalOpen) {
+              closeModal();
+            } else {
+              openModal();
+            }
+          }
+
+          // Escape
+          if (e.key === "Escape" && isModalOpen) {
+            e.preventDefault();
+            closeModal();
+          }
+
+          // Toggle theme shortcut: ⌘⇧L or Ctrl+Shift+L
+          if (e.key === "L" && (e.metaKey || e.ctrlKey) && e.shiftKey) {
+            e.preventDefault();
+            toggleDarkMode();
+          }
+          
+          // Action shortcuts trigger (e.g. ⌘D, ⌘M, ⌘P, ⌘, , ⌘N, ⌘T)
+          const activeElement = document.activeElement;
+          const isEditing = activeElement && (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA" || activeElement.isContentEditable);
+          const insidePalette = activeElement && activeElement.closest("#modal-container");
+          
+          if ((e.metaKey || e.ctrlKey) && (!isEditing || insidePalette)) {
+            let triggered = false;
+            let label = "";
+            
+            switch (e.key) {
+              case "d":
+                e.preventDefault();
+                triggered = true;
+                label = "Go to Dashboard";
+                break;
+              case "m":
+                e.preventDefault();
+                triggered = true;
+                label = "Go to Markets";
+                break;
+              case "p":
+                e.preventDefault();
+                triggered = true;
+                label = "Go to Portfolio";
+                break;
+              case ",":
+                e.preventDefault();
+                triggered = true;
+                label = "Go to Settings";
+                break;
+              case "n":
+                e.preventDefault();
+                triggered = true;
+                label = "New Order";
+                break;
+              case "t":
+                e.preventDefault();
+                triggered = true;
+                label = "Transfer Funds";
+                break;
+            }
+
+            if (triggered) {
+              if (isModalOpen) closeModal();
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

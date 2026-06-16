@@ -43,6 +43,15 @@ export const experimentsList: Experiment[] = [
     path: "/experiments/04_payment_flow_upi/index.html",
     image: "/assets/experiment_covers/04-cover.png",
     newTab: true
+  },
+  {
+    id: "05_command_pallete",
+    title: "acme command palette",
+    category: "interactions",
+    description: "a keyboard-first command palette featuring geometric styling, mono-flecked aesthetics, and alert-red focus. press ⌘k to open.",
+    path: "/experiments/05_command_pallete/index.html",
+    image: "/assets/experiment_covers/05-cover.png",
+    newTab: true
   }
 ];
 
