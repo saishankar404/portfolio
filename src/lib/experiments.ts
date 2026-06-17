@@ -52,6 +52,15 @@ export const experimentsList: Experiment[] = [
     path: "/experiments/05_command_pallete/index.html",
     image: "/assets/experiment_covers/05-cover.png",
     newTab: true
+  },
+  {
+    id: "06_nothing_onboarding",
+    title: "nothing onboarding",
+    category: "interactions",
+    description: "an interactive multi-step onboarding simulation inspired by the nothing design system, featuring dot-matrix typography, sound effects, and clean monochrome interactions.",
+    path: "/experiments/06_nothing_onboarding/index.html",
+    image: "/assets/experiment_covers/06-cover.png",
+    newTab: true
   }
 ];
 

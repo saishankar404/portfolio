@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nothing — Welcome</title>
+
+    <!-- Google Fonts required by Nothing Design System -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Doto:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- GSAP for precise transitions -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel for JSX compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script>
+        Babel.registerPreset('app-react', {
+            presets: [
+                [Babel.availablePresets['react'], { runtime: 'classic' }]
+            ]
+        });
+    </script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        doto: ['Ndot-57', 'monospace'],
+                        'doto-aligned': ['Ndot-57-Aligned', 'monospace'],
+                        grotesk: ['NType82', 'Space Grotesk', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    },
+                    colors: {
+                        nd: {
+                            black: 'var(--black)',
+                            surface: 'var(--surface)',
+                            'surface-raised': 'var(--surface-raised)',
+                            border: 'var(--border)',
+                            'border-visible': 'var(--border-visible)',
+                            'text-disabled': 'var(--text-disabled)',
+                            'text-secondary': 'var(--text-secondary)',
+                            'text-primary': 'var(--text-primary)',
+                            'text-display': 'var(--text-display)',
+                            accent: 'var(--accent)',
+                            success: 'var(--success)',
+                            warning: 'var(--warning)',
+                            interactive: 'var(--interactive)',
+                            yellow: 'var(--yellow)'
+                        }
+                    },
+                    letterSpacing: {
+                        'label': '0.08em',
+                        'tight-hero': '-0.02em',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Local Fonts */
+        @font-face {
+            font-family: 'Ndot-57';
+            src: url('fonts/Ndot-57.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Ndot-57-Aligned';
+            src: url('fonts/Ndot-57-Aligned.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'NType82';
+            src: url('fonts/NType82-Regular.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'NType82';
+            src: url('fonts/NType82-Headline.otf') format('opentype');
+            font-weight: bold;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'NType82';
+            src: url('fonts/NType82-Headline.otf') format('opentype');
+            font-weight: 500;
+            font-style: normal;
+        }
+
+        :root {
+            /* Dark Mode Defaults */
+            --black: #000000;
+            --surface: #111111;
+            --surface-raised: #1A1A1A;
+            --border: #222222;
+            --border-visible: #333333;
+            --text-disabled: #666666;
+            --text-secondary: #999999;
+            --text-primary: #E8E8E8;
+            --text-display: #FFFFFF;
+            --accent: #D71921;
+            --success: #4A9E5C;
+            --warning: #D4A843;
+            --interactive: #5B9BF6;
+            --yellow: #FFC600;
+            
+            background-color: var(--black);
+            color: var(--text-primary);
+            color-scheme: dark;
+        }
+
+        html.light, .light {
+            /* Light Mode Variables */
+            --black: #F5F5F5;
+            --surface: #FFFFFF;
+            --surface-raised: #F0F0F0;
+            --border: #E8E8E8;
+            --border-visible: #CCCCCC;
+            --text-disabled: #999999;
+            --text-secondary: #666666;
+            --text-primary: #1A1A1A;
+            --text-display: #000000;
+            --interactive: #007AFF;
+            --yellow: #FFC600;
+            
+            background-color: var(--black);
+            color: var(--text-primary);
+            color-scheme: light;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--black);
+            background-image: radial-gradient(circle, var(--border-visible) 1px, transparent 1px);
+            background-size: 16px 16px;
+            transition: background-color 0.3s ease, background-image 0.3s ease;
+        }
+
+        /* Hide scrollbars */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Remove input spinners */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Custom inputs and selection */
+        input {
+            background: transparent;
+            color: var(--text-primary);
+            font-family: 'Space Mono', monospace;
+            caret-color: var(--yellow);
+        }
+        input::placeholder {
+            color: var(--text-disabled);
+        }
+        ::selection {
+            background-color: var(--yellow);
+            color: #000000;
+        }
+
+        /* Dot-matrix Preloader for Nothing Aesthetic */
+        .preloader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s;
+            visibility: visible;
+        }
+        html.light .preloader-overlay {
+            background-color: #F5F5F5;
+        }
+        .preloader-overlay.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .preloader-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 6px);
+            grid-template-rows: repeat(3, 6px);
+            gap: 4px;
+            width: 26px;
+            height: 26px;
+        }
+        .preloader-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--text-primary);
+            opacity: 0.25;
+            animation: preloader-chase 0.7s infinite ease-in-out;
+        }
+        .preloader-dot:nth-child(3),
+        .preloader-dot:nth-child(7) {
+            background-color: var(--accent);
+        }
+        .preloader-dot.center-empty {
+            visibility: hidden;
+            animation: none;
+        }
+        .preloader-dot:nth-child(1) { animation-delay: 0.0s; }
+        .preloader-dot:nth-child(2) { animation-delay: 0.08s; }
+        .preloader-dot:nth-child(3) { animation-delay: 0.16s; }
+        .preloader-dot:nth-child(6) { animation-delay: 0.24s; }
+        .preloader-dot:nth-child(9) { animation-delay: 0.32s; }
+        .preloader-dot:nth-child(8) { animation-delay: 0.40s; }
+        .preloader-dot:nth-child(7) { animation-delay: 0.48s; }
+        .preloader-dot:nth-child(4) { animation-delay: 0.56s; }
+
+        @keyframes preloader-chase {
+            0%, 100% {
+                opacity: 0.25;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.08);
+            }
+        }
+    </style>
+</head>
+<body class="font-grotesk antialiased flex items-center justify-center">
+    
+    <!-- Dot-matrix Preloader for Nothing Aesthetic -->
+    <div id="preloader" class="preloader-overlay">
+        <div class="preloader-grid">
+            <span class="preloader-dot"></span>
+            <span class="preloader-dot"></span>
+            <span class="preloader-dot"></span>
+            <span class="preloader-dot"></span>
+            <span class="preloader-dot center-empty"></span>
+            <span class="preloader-dot"></span>
+            <span class="preloader-dot"></span>
+            <span class="preloader-dot"></span>
+            <span class="preloader-dot"></span>
+        </div>
+    </div>
+
+    <div id="root" class="w-full min-h-screen flex items-center justify-center p-0 sm:p-6 box-border"></div>
+
+    <script type="text/babel" data-presets="app-react">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // --- Tasteful Web Audio Synthesizer ---
+        const NothingSound = {
+            ctx: null,
+            muted: false,
+            init() {
+                if (this.ctx) return;
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    this.ctx = new AudioContextClass();
+                }
+            },
+            playClick() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+                
+                try {
+                    const now = this.ctx.currentTime;
+                    
+                    // Synthesize filtered noise click
+                    const bufferSize = this.ctx.sampleRate * 0.04;
+                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    
+                    const noise = this.ctx.createBufferSource();
+                    noise.buffer = buffer;
+                    
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.setValueAtTime(1000, now);
+                    filter.Q.setValueAtTime(5, now);
+                    
+                    const gain = this.ctx.createGain();
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+                    
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    noise.start(now);
+                } catch (e) {
+                    console.error("Audio error", e);
+                }
+            },
+            playTick() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+                
+                try {
+                    const now = this.ctx.currentTime;
+                    
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(1500, now);
+                    osc.frequency.exponentialRampToValueAtTime(350, now + 0.015);
+                    
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    osc.start(now);
+                    osc.stop(now + 0.018);
+                } catch (e) {
+                    console.error("Audio error", e);
+                }
+            },
+            playSuccess() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+                
+                try {
+                    const now = this.ctx.currentTime;
+                    
+                    // Dual chime (C5 & E5 harmonic notes)
+                    const osc1 = this.ctx.createOscillator();
+                    const gain1 = this.ctx.createGain();
+                    osc1.type = 'sine';
+                    osc1.frequency.setValueAtTime(523.25, now);
+                    gain1.gain.setValueAtTime(0.04, now);
+                    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                    osc1.connect(gain1);
+                    gain1.connect(this.ctx.destination);
+                    osc1.start(now);
+                    osc1.stop(now + 0.15);
+                    
+                    const osc2 = this.ctx.createOscillator();
+                    const gain2 = this.ctx.createGain();
+                    osc2.type = 'sine';
+                    osc2.frequency.setValueAtTime(659.25, now + 0.05);
+                    gain2.gain.setValueAtTime(0.04, now + 0.05);
+                    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                    osc2.connect(gain2);
+                    gain2.connect(this.ctx.destination);
+                    osc2.start(now + 0.05);
+                    osc2.stop(now + 0.22);
+                } catch (e) {
+                    console.error("Audio error", e);
+                }
+            }
+        };
+
+        // --- Hardware/Monoline Icons (SVG only) ---
+        const IconArrowLeft = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 5 5" fill="currentColor">
+                {/* Row 1 */}
+                <circle cx="2.5" cy="0.5" r="0.35" />
+                {/* Row 2 */}
+                <circle cx="1.5" cy="1.5" r="0.35" />
+                {/* Row 3 */}
+                <circle cx="0.5" cy="2.5" r="0.35" />
+                <circle cx="1.5" cy="2.5" r="0.35" />
+                <circle cx="2.5" cy="2.5" r="0.35" />
+                <circle cx="3.5" cy="2.5" r="0.35" />
+                <circle cx="4.5" cy="2.5" r="0.35" />
+                {/* Row 4 */}
+                <circle cx="1.5" cy="3.5" r="0.35" />
+                {/* Row 5 */}
+                <circle cx="2.5" cy="4.5" r="0.35" />
+            </svg>
+        );
+        const IconSpeakerOn = () => (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+            </svg>
+        );
+        const IconSpeakerOff = () => (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <line x1="23" y1="9" x2="17" y2="15" />
+                <line x1="17" y1="9" x2="23" y2="15" />
+            </svg>
+        );
+        const IconSun = () => (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                {/* Yellow center circle */}
+                <circle cx="12" cy="12" r="3.5" fill="#FFC000" />
+                {/* Ray 1 (12:00) */}
+                <circle cx="12" cy="6.5" r="0.75" />
+                <circle cx="12" cy="4.5" r="0.75" />
+                <circle cx="12" cy="2.5" r="0.75" />
+                {/* Ray 2 (2:00) */}
+                <circle cx="16.76" cy="9.25" r="0.75" />
+                <circle cx="18.50" cy="8.25" r="0.75" />
+                <circle cx="20.23" cy="7.25" r="0.75" />
+                {/* Ray 3 (4:00) */}
+                <circle cx="16.76" cy="14.75" r="0.75" />
+                <circle cx="18.50" cy="15.75" r="0.75" />
+                <circle cx="20.23" cy="16.75" r="0.75" />
+                {/* Ray 4 (5:00) */}
+                <circle cx="13.42" cy="17.31" r="0.75" />
+                <circle cx="13.94" cy="19.25" r="0.75" />
+                <circle cx="14.46" cy="21.18" r="0.75" />
+                {/* Ray 5 (7:00) */}
+                <circle cx="10.58" cy="17.31" r="0.75" />
+                <circle cx="10.06" cy="19.25" r="0.75" />
+                <circle cx="9.54" cy="21.18" r="0.75" />
+                {/* Ray 6 (8:00) */}
+                <circle cx="7.24" cy="14.75" r="0.75" />
+                <circle cx="5.50" cy="15.75" r="0.75" />
+                <circle cx="3.77" cy="16.75" r="0.75" />
+                {/* Ray 7 (10:00) */}
+                <circle cx="7.24" cy="9.25" r="0.75" />
+                <circle cx="5.50" cy="8.25" r="0.75" />
+                <circle cx="3.77" cy="7.25" r="0.75" />
+            </svg>
+        );
+        const IconMoon = () => (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" fill="#FFC000" />
+            </svg>
+        );
+        const IconBolt = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>;
+        const IconStop = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"></rect></svg>;
+        const IconRefresh = ({ size = 12 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square" strokeLinejoin="miter">
+                <path d="M23 4v6h-6" />
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+            </svg>
+        );
+        const IconGoogle = ({ size = 14 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className="inline-block align-middle">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+            </svg>
+        );
+        const IconApple = ({ size = 14 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className="inline-block align-middle">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.2.67-2.92 1.49-.62.71-1.16 1.85-1.01 2.96 1.1.09 2.23-.58 2.94-1.39z" />
+            </svg>
+        );
+
+        // --- Core UI Buttons ---
+        const ButtonPrimary = ({ children, onClick, disabled, className = "" }) => {
+            const handlePress = () => {
+                NothingSound.playClick();
+                if (onClick) onClick();
+            };
+            return (
+                <button 
+                    onClick={handlePress}
+                    disabled={disabled}
+                    className={`w-full py-3 px-6 rounded-full font-mono text-[13px] uppercase tracking-label transition-colors duration-200 
+                    ${disabled ? 'bg-nd-border-visible text-nd-text-disabled cursor-not-allowed' : 'bg-nd-text-display text-nd-black hover:bg-nd-text-primary'} ${className}`}
+                >
+                    {children}
+                </button>
+            );
+        };
+
+        const ButtonGhost = ({ children, onClick, className = "" }) => {
+            const handlePress = () => {
+                NothingSound.playClick();
+                if (onClick) onClick();
+            };
+            return (
+                <button 
+                    onClick={handlePress}
+                    className={`p-2 text-nd-text-secondary hover:text-nd-text-display transition-colors ${className}`}
+                >
+                    {children}
+                </button>
+            );
+        };
+
+        const Label = ({ children, className = "" }) => (
+            <span className={`font-mono text-[11px] uppercase tracking-label text-nd-text-secondary ${className}`}>
+                {children}
+            </span>
+        );
+
+        // --- Step 1: Email Form ---
+        const StepEmail = ({ email, setEmail, onNext }) => {
+            const [mode, setMode] = useState('signin'); // 'signin' or 'signup'
+            const isValid = email.includes('@') && email.length > 5;
+            
+            return (
+                <div className="flex flex-col h-full">
+                    <div className="flex-grow flex flex-col">
+                        {/* Sign In / Sign Up Switcher */}
+                        <div className="flex border border-nd-border-visible rounded-full p-[2px] mb-8 bg-nd-black w-full max-w-[280px]">
+                            <button 
+                                onClick={() => { setMode('signin'); NothingSound.playClick(); }}
+                                className={`flex-1 py-2 rounded-full font-mono text-[12px] uppercase tracking-label transition-all duration-250
+                                    ${mode === 'signin' ? 'bg-nd-text-display text-nd-black font-bold' : 'text-nd-text-secondary hover:text-nd-text-primary'}`}
+                            >
+                                SIGN IN
+                            </button>
+                            <button 
+                                onClick={() => { setMode('signup'); NothingSound.playClick(); }}
+                                className={`flex-1 py-2 rounded-full font-mono text-[12px] uppercase tracking-label transition-all duration-250
+                                    ${mode === 'signup' ? 'bg-nd-text-display text-nd-black font-bold' : 'text-nd-text-secondary hover:text-nd-text-primary'}`}
+                            >
+                                SIGN UP
+                            </button>
+                        </div>
+
+                        {/* Title and Intro */}
+                        <div className="mb-8">
+                            <h1 className="font-doto text-nd-text-display text-4xl mb-2 tracking-tight-hero">
+                                {mode === 'signin' ? 'SIGN IN' : 'SIGN UP'}
+                            </h1>
+                            <p className="text-nd-text-secondary text-[14px]">
+                                {mode === 'signin' ? "Let's start with your email." : 'Create an account to get started.'}
+                            </p>
+                        </div>
+
+                        {/* Email Input Field */}
+                        <div className="border-b border-nd-border-visible pb-2 focus-within:border-nd-text-display transition-colors">
+                            <Label className="block mb-2">EMAIL ADDRESS</Label>
+                            <input 
+                                type="email"
+                                value={email}
+                                onChange={e => { setEmail(e.target.value); NothingSound.playTick(); }}
+                                placeholder="YOUR@DOMAIN.COM"
+                                className="w-full text-lg outline-none uppercase font-mono bg-transparent py-1 focus:placeholder-transparent transition-all"
+                                autoFocus
+                            />
+                        </div>
+
+                        {/* Primary Action Button */}
+                        <div className="mt-8">
+                            <ButtonPrimary disabled={!isValid} onClick={onNext}>
+                                {mode === 'signin' ? 'CONTINUE' : 'CREATE ACCOUNT'}
+                            </ButtonPrimary>
+                        </div>
+
+                        {/* Switch Link */}
+                        <div className="mt-4 text-center">
+                            {mode === 'signin' ? (
+                                <button 
+                                    onClick={() => { setMode('signup'); NothingSound.playClick(); }}
+                                    className="font-mono text-[11px] uppercase tracking-tight-hero text-nd-text-secondary hover:text-nd-text-display transition-colors"
+                                >
+                                    Create an Account
+                                </button>
+                            ) : (
+                                <button 
+                                    onClick={() => { setMode('signin'); NothingSound.playClick(); }}
+                                    className="font-mono text-[11px] uppercase tracking-label text-nd-text-secondary hover:text-nd-text-display transition-colors"
+                                >
+                                    Already have an account? Sign In
+                                </button>
+                            )}
+                        </div>
+
+                        {/* OR Separator */}
+                        <div className="flex items-center my-10">
+                            <div className="flex-grow border-t border-nd-border-visible"></div>
+                            <span className="mx-4 font-mono text-[9px] text-nd-text-disabled tracking-widest uppercase">OR</span>
+                            <div className="flex-grow border-t border-nd-border-visible"></div>
+                        </div>
+
+                        {/* Social Buttons */}
+                        <div className="flex gap-3">
+                            <button 
+                                onClick={() => { NothingSound.playClick(); }}
+                                className="flex-1 py-2.5 border border-nd-border-visible rounded-full flex items-center justify-center gap-2 hover:border-nd-text-primary transition-all duration-200 active:scale-[0.98] text-nd-text-primary"
+                            >
+                                <IconGoogle size={14} />
+                                <span className="font-mono text-[11px] uppercase tracking-label">GOOGLE</span>
+                            </button>
+                            <button 
+                                onClick={() => { NothingSound.playClick(); }}
+                                className="flex-1 py-2.5 border border-nd-border-visible rounded-full flex items-center justify-center gap-2 hover:border-nd-text-primary transition-all duration-200 active:scale-[0.98] text-nd-text-primary"
+                            >
+                                <IconApple size={14} />
+                                <span className="font-mono text-[11px] uppercase tracking-label">APPLE</span>
+                            </button>
+                        </div>
+
+                        {/* Legal Disclaimers */}
+                        <p className="font-mono text-[9px] text-nd-text-disabled uppercase text-center mt-10 leading-relaxed">
+                            By signing {mode === 'signin' ? 'in' : 'up'}, you agree to our<br />
+                            <a href="#" className="underline hover:text-nd-text-secondary transition-colors">Privacy Policy</a> and <a href="#" className="underline hover:text-nd-text-secondary transition-colors">User Agreement</a>.
+                        </p>
+                    </div>
+                </div>
+            );
+        };
+
+        const StepOTP = ({ otp, setOtp, onBack, onNext }) => {
+            const [timer, setTimer] = useState(29);
+            const [focusedIndex, setFocusedIndex] = useState(0);
+            const inputRefs = useRef([]);
+
+            useEffect(() => {
+                if (timer === 0) return;
+                const interval = setInterval(() => {
+                    setTimer(p => {
+                        if (p <= 1) {
+                            return 0;
+                        }
+                        if (p <= 6) {
+                            NothingSound.playTick();
+                        }
+                        return p - 1;
+                    });
+                }, 1000);
+                return () => clearInterval(interval);
+            }, [timer === 0]);
+
+            const handleChange = (index, value) => {
+                if (!/^\d*$/.test(value)) return;
+                const newOtp = [...otp];
+                newOtp[index] = value.slice(-1);
+                setOtp(newOtp);
+                
+                NothingSound.playTick();
+
+                if (value && index < 5) {
+                    inputRefs.current[index + 1].focus();
+                }
+            };
+
+            const handleKeyDown = (index, e) => {
+                if (e.key === 'Backspace') {
+                    if (!otp[index] && index > 0) {
+                        const newOtp = [...otp];
+                        newOtp[index - 1] = '';
+                        setOtp(newOtp);
+                        inputRefs.current[index - 1].focus();
+                        NothingSound.playTick();
+                    }
+                }
+            };
+
+            const handleResend = () => {
+                if (timer === 0) {
+                    setOtp(['', '', '', '', '', '']);
+                    setTimer(29);
+                    NothingSound.playSuccess();
+                    setTimeout(() => {
+                        if (inputRefs.current[0]) {
+                            inputRefs.current[0].focus();
+                        }
+                    }, 50);
+                }
+            };
+
+            const isComplete = otp.every(d => d !== '');
+
+            return (
+                <div className="flex flex-col h-full">
+                    <div className="flex-grow flex flex-col mt-2">
+                        <div className="flex justify-between items-start mb-8">
+                            <div>
+                                <h1 className="font-doto text-nd-text-display text-4xl mb-1 tracking-tight-hero">VERIFY</h1>
+                                <p className="text-nd-text-secondary text-[14px] mt-2">We sent a code to your inbox.</p>
+                            </div>
+                            <div className="text-nd-accent font-mono text-xl mt-2">{timer}s</div>
+                        </div>
+
+                        <div className="">
+                            <span className="font-mono text-[12px] uppercase tracking-tight-hero text-nd-text-secondary block mb-4">
+                                ENTER YOUR 6-DIGIT CODE BELOW
+                            </span>
+                            
+                            {/* Two-capsule OTP Input Layout as requested in image */}
+                            <div className="flex gap-4 justify-between items-center w-full max-w-[340px] mr-auto">
+                                {/* Left Capsule (Digits 1-3) */}
+                                <div 
+                                    className={`flex-grow flex-1 flex items-stretch border rounded-[8px] overflow-hidden transition-all duration-200
+                                        ${focusedIndex < 3 
+                                            ? 'border-nd-text-display bg-nd-surface-raised' 
+                                            : 'border-nd-border-visible bg-nd-surface'}`}
+                                >
+                                    {otp.slice(0, 3).map((digit, i) => {
+                                        const index = i;
+                                        return (
+                                            <React.Fragment key={index}>
+                                                <input
+                                                    ref={el => inputRefs.current[index] = el}
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    maxLength={1}
+                                                    placeholder="0"
+                                                    value={digit}
+                                                    onFocus={() => setFocusedIndex(index)}
+                                                    onChange={(e) => handleChange(index, e.target.value)}
+                                                    onKeyDown={(e) => handleKeyDown(index, e)}
+                                                    className="w-full text-center text-3xl font-doto-aligned font-bold bg-transparent border-none outline-none focus:ring-0 placeholder:opacity-40 py-2.5"
+                                                    style={{ color: 'var(--text-display)' }}
+                                                />
+                                                {i < 2 && <div className="w-[1px] bg-nd-border-visible self-stretch" />}
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Center Dot Separator */}
+                                <div className="text-nd-yellow font-mono text-xl select-none flex items-center justify-center">
+                                    •
+                                </div>
+
+                                {/* Right Capsule (Digits 4-6) */}
+                                <div 
+                                    className={`flex-grow flex-1 flex items-stretch border rounded-[8px] overflow-hidden transition-all duration-200
+                                        ${focusedIndex >= 3 
+                                            ? 'border-nd-text-display bg-nd-surface-raised' 
+                                            : 'border-nd-border-visible bg-nd-surface'}`}
+                                >
+                                    {otp.slice(3, 6).map((digit, i) => {
+                                        const index = i + 3;
+                                        return (
+                                            <React.Fragment key={index}>
+                                                <input
+                                                    ref={el => inputRefs.current[index] = el}
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    maxLength={1}
+                                                    placeholder="0"
+                                                    value={digit}
+                                                    onFocus={() => setFocusedIndex(index)}
+                                                    onChange={(e) => handleChange(index, e.target.value)}
+                                                    onKeyDown={(e) => handleKeyDown(index, e)}
+                                                    className="w-full text-center text-3xl font-doto-aligned font-bold bg-transparent border-none outline-none focus:ring-0 placeholder:opacity-40 py-2.5"
+                                                    style={{ color: 'var(--text-display)' }}
+                                                />
+                                                {i < 2 && <div className="w-[1px] bg-nd-border-visible self-stretch" />}
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Resend Code Link */}
+                            <div className="mt-6 flex items-center">
+                                <button 
+                                    onClick={handleResend}
+                                    disabled={timer > 0}
+                                    className={`flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-label transition-colors duration-200
+                                        ${timer > 0 ? 'text-nd-text-disabled cursor-not-allowed' : 'text-nd-text-secondary hover:text-nd-text-display cursor-pointer'}`}
+                                >
+                                    <IconRefresh size={12} />
+                                    <span>RESEND CODE</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Authenticate Button inline - stays visible above soft keyboard */}
+                        <div className="mt-8">
+                            <ButtonPrimary disabled={!isComplete || timer === 0} onClick={onNext}>
+                                AUTHENTICATE
+                            </ButtonPrimary>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Step 3: Profile Setup ---
+        const StepProfile = ({ username, setUsername, theme, setTheme, onNext }) => {
+            return (
+                <div className="flex flex-col h-full justify-between">
+                    <div className="flex-grow flex flex-col">
+                        <div className="mb-8 sm:mb-12">
+                            <h1 className="font-doto text-nd-text-display text-4xl mb-2 tracking-tight-hero">PROFILE</h1>
+                            <p className="text-nd-text-secondary text-[14px]">Let's set up you a identity</p>
+                        </div>
+
+                        <div className="space-y-6 sm:space-y-8">
+                            <div className="border-b border-nd-border-visible pb-2 focus-within:border-nd-text-display transition-colors">
+                                <span className="font-mono text-[12px] uppercase tracking-tight-hero text-nd-text-secondary block mb-2">What should we call you?</span>
+                                <input 
+                                    type="text"
+                                    value={username}
+                                    onChange={e => { setUsername(e.target.value); NothingSound.playTick(); }}
+                                    placeholder="username"
+                                    autoCapitalize="none"
+                                    autoComplete="off"
+                                    autoCorrect="off"
+                                    className="w-full text-lg outline-none font-mono bg-transparent py-1 focus:placeholder-transparent transition-all"
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="mt-2 sm:mt-4">
+                                <span className="font-mono text-[12px] uppercase tracking-tight-hero text-nd-text-secondary block mb-4">INTERFACE PREFERENCE</span>
+                                <div className="flex gap-4">
+                                    <button 
+                                        onClick={() => { setTheme('dark'); NothingSound.playSuccess(); }}
+                                        className={`flex-1 py-6 sm:py-8 border-2 border-dotted rounded-lg flex items-center justify-center gap-4 transition-all duration-200 active:scale-[0.98]
+                                            ${theme === 'dark' 
+                                                ? 'border-nd-text-display bg-nd-surface-raised text-nd-text-primary font-bold' 
+                                                : 'border-nd-border-visible text-nd-text-secondary'}`}
+                                    >
+                                        <div className={`w-5 h-5 rounded-full border transition-all duration-200 ${theme === 'dark' ? 'bg-nd-yellow border-nd-yellow scale-110' : 'bg-black border-nd-text-disabled scale-100'}`}></div>
+                                        <span className="font-mono text-[15px] sm:text-base uppercase tracking-label">DARK</span>
+                                    </button>
+                                    <button 
+                                        onClick={() => { setTheme('light'); NothingSound.playSuccess(); }}
+                                        className={`flex-1 py-6 sm:py-8 border-2 border-dotted rounded-lg flex items-center justify-center gap-4 transition-all duration-200 active:scale-[0.98]
+                                            ${theme === 'light' 
+                                                ? 'border-nd-text-display bg-nd-surface-raised text-nd-text-primary font-bold' 
+                                                : 'border-nd-border-visible text-nd-text-secondary'}`}
+                                    >
+                                        <div className={`w-5 h-5 rounded-full border transition-all duration-200 ${theme === 'light' ? 'bg-nd-yellow border-nd-yellow scale-110' : 'bg-white border-nd-text-disabled scale-100'}`}></div>
+                                        <span className="font-mono text-[15px] sm:text-base uppercase tracking-label">LIGHT</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="pt-6 sm:pt-8 mt-auto">
+                        <ButtonPrimary disabled={username.trim().length < 3} onClick={onNext}>
+                            CONTINUE
+                        </ButtonPrimary>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Step 4: Workout Duration Screen (GSAP Smooth Magnetic Clock Picker) ---
+        const StepTimeSync = ({ theme, onBack, onNext }) => {
+            const [startAngle, setStartAngle] = useState(0);   
+            const [endAngle, setEndAngle] = useState(90);       
+            const [is24h, setIs24h] = useState(true);
+            const [dragging, setDragging] = useState(null);
+            const containerRef = useRef(null);
+            const svgRef = useRef(null);
+
+            const startAngleObj = useRef({ val: 0 });
+            const endAngleObj = useRef({ val: 90 });
+            const targetStartAngle = useRef(0);
+            const targetEndAngle = useRef(90);
+
+            useEffect(() => {
+                const anim = { val: 0 };
+                gsap.to(anim, {
+                    val: 90,
+                    duration: 1.2,
+                    ease: "power4.out",
+                    delay: 0.1,
+                    onUpdate: () => {
+                        setEndAngle(anim.val);
+                        endAngleObj.current.val = anim.val;
+                        targetEndAngle.current = anim.val;
+                    }
+                });
+                
+                gsap.fromTo(containerRef.current.querySelectorAll('.stagger-el'), 
+                    { opacity: 0, y: 10 }, 
+                    { opacity: 1, y: 0, duration: 0.4, stagger: 0.08, ease: "power2.out" }
+                );
+            }, []);
+
+            const formatTime = (angle) => {
+                let normalized = (angle % 360 + 360) % 360;
+                let totalHours = (normalized / 360) * 24;
+                let h = Math.floor(totalHours);
+                let m = Math.round((totalHours % 1) * 60);
+                if (m === 60) { m = 0; h = (h + 1) % 24; }
+                
+                let ampm = h >= 12 ? 'pm' : 'am';
+                let displayH = is24h ? h : (h % 12 || 12);
+                let displayM = m.toString().padStart(2, '0');
+                
+                return `${displayH}:${displayM}${is24h ? '' : ampm}`;
+            };
+
+            const getDurationObj = () => {
+                let diff = endAngle - startAngle;
+                if (diff < 0) diff += 360;
+                let totalHours = (diff / 360) * 24;
+                let h = Math.floor(totalHours);
+                let m = Math.round((totalHours % 1) * 60);
+                if (m === 60) { m = 0; h += 1; }
+                return { h, m };
+            };
+
+            const polarToCartesian = (cx, cy, r, angleInDegrees) => {
+                const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+                return { x: cx + (r * Math.cos(angleInRadians)), y: cy + (r * Math.sin(angleInRadians)) };
+            };
+
+            const getShortestTargetAngle = (current, target) => {
+                let diff = target - current;
+                diff = ((diff + 180) % 360 + 360) % 360 - 180;
+                return current + diff;
+            };
+
+            useEffect(() => {
+                const handlePointerMove = (e) => {
+                    if (!dragging || !svgRef.current) return;
+                    const rect = svgRef.current.getBoundingClientRect();
+                    const cx = rect.left + rect.width / 2;
+                    const cy = rect.top + rect.height / 2;
+                    let angle = Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI + 90;
+                    if (angle < 0) angle += 360;
+                    
+                    const snappedAngle = Math.round(angle / 2.5) * 2.5;
+                    
+                    if (dragging === 'start') {
+                        if (snappedAngle !== targetStartAngle.current) {
+                            targetStartAngle.current = snappedAngle;
+                            NothingSound.playTick();
+                            
+                            const currentVal = startAngleObj.current.val;
+                            const adjustedTarget = getShortestTargetAngle(currentVal, snappedAngle);
+                            
+                            gsap.to(startAngleObj.current, {
+                                val: adjustedTarget,
+                                duration: 0.15,
+                                ease: "power2.out",
+                                onUpdate: () => {
+                                    const normalized = (startAngleObj.current.val % 360 + 360) % 360;
+                                    setStartAngle(normalized);
+                                },
+                                onComplete: () => {
+                                    const normalized = (startAngleObj.current.val % 360 + 360) % 360;
+                                    startAngleObj.current.val = normalized;
+                                }
+                            });
+                        }
+                    } else {
+                        if (snappedAngle !== targetEndAngle.current) {
+                            targetEndAngle.current = snappedAngle;
+                            NothingSound.playTick();
+                            
+                            const currentVal = endAngleObj.current.val;
+                            const adjustedTarget = getShortestTargetAngle(currentVal, snappedAngle);
+                            
+                            gsap.to(endAngleObj.current, {
+                                val: adjustedTarget,
+                                duration: 0.15,
+                                ease: "power2.out",
+                                onUpdate: () => {
+                                    const normalized = (endAngleObj.current.val % 360 + 360) % 360;
+                                    setEndAngle(normalized);
+                                },
+                                onComplete: () => {
+                                    const normalized = (endAngleObj.current.val % 360 + 360) % 360;
+                                    endAngleObj.current.val = normalized;
+                                }
+                            });
+                        }
+                    }
+                };
+                
+                const handlePointerUp = () => {
+                    setDragging(null);
+                    // Normalize the ref values to [0, 360) when dragging stops to prevent drift
+                    const normalizedStart = (startAngleObj.current.val % 360 + 360) % 360;
+                    startAngleObj.current.val = normalizedStart;
+                    targetStartAngle.current = normalizedStart;
+                    
+                    const normalizedEnd = (endAngleObj.current.val % 360 + 360) % 360;
+                    endAngleObj.current.val = normalizedEnd;
+                    targetEndAngle.current = normalizedEnd;
+                };
+
+                if (dragging) {
+                    window.addEventListener('pointermove', handlePointerMove);
+                    window.addEventListener('pointerup', handlePointerUp);
+                }
+                return () => {
+                    window.removeEventListener('pointermove', handlePointerMove);
+                    window.removeEventListener('pointerup', handlePointerUp);
+                };
+            }, [dragging]);
+
+            const handlePointerDown = (e, type) => {
+                e.preventDefault();
+                setDragging(type);
+            };
+
+            const applyPreset = (hours) => {
+                const angleDiff = hours * 15;
+                let targetAngle = startAngle + angleDiff;
+                const normalizedTarget = (targetAngle % 360 + 360) % 360;
+                
+                NothingSound.playSuccess();
+                targetEndAngle.current = normalizedTarget;
+                
+                const currentVal = endAngleObj.current.val;
+                const adjustedTarget = getShortestTargetAngle(currentVal, normalizedTarget);
+                
+                gsap.to(endAngleObj.current, {
+                    val: adjustedTarget,
+                    duration: 0.4,
+                    ease: "power2.out",
+                    onUpdate: () => {
+                        const normalized = (endAngleObj.current.val % 360 + 360) % 360;
+                        setEndAngle(normalized);
+                    },
+                    onComplete: () => {
+                        endAngleObj.current.val = normalizedTarget;
+                        targetEndAngle.current = normalizedTarget;
+                        setEndAngle(normalizedTarget);
+                    }
+                });
+            };
+
+            const radius = 130;
+            const circumference = 2 * Math.PI * radius;
+            const startPos = polarToCartesian(0, 0, radius, startAngle);
+            const endPos = polarToCartesian(0, 0, radius, endAngle);
+
+            let diff = endAngle - startAngle;
+            if (diff < 0) diff += 360;
+            let arcLength = (diff / 360) * circumference;
+
+            const { h, m } = getDurationObj();
+
+            return (
+                <div ref={containerRef} className="flex flex-col h-full select-none justify-between">
+                    <div>
+                        {/* RECORD Title */}
+                        <div className="flex justify-between items-start mt-0 stagger-el mb-2">
+                            <div>
+                                <h1 className="font-doto text-nd-text-display text-5xl leading-none tracking-tight-hero font-medium">RECORD</h1>
+                                <p className="text-nd-text-secondary text-[16px] font-mono uppercase tracking-tight-hero mt-2 mb-3">Log your first session.</p>
+                            </div>
+                        </div>
+
+                        {/* Top Data Readouts */}
+                        <div className="grid grid-cols-3 gap-2 mb-6 stagger-el">
+                            <div>
+                                <span className="font-mono text-[11px] uppercase tracking-tight text-nd-text-disabled block mb-1">Start</span>
+                                <div className="font-grotesk text-[28px] font-bold leading-none tracking-tight-hero text-nd-text-display pt-2">
+                                    {formatTime(startAngle)}
+                                </div>
+                            </div>
+                            <div>
+                                <span className="font-mono text-[11px] uppercase tracking-tight text-nd-text-disabled block mb-1 pl-2 sm:pl-4">Stop</span>
+                                <div className="font-grotesk text-[28px] font-bold leading-none tracking-tight-hero text-nd-text-display pt-2 pl-2 sm:pl-4">
+                                    {formatTime(endAngle)}
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-end">
+                                <span className="font-mono text-[11px] uppercase tracking-tight text-nd-text-disabled block mb-1">24 H</span>
+                                <div className="pt-2">
+                                    <div 
+                                        onClick={() => { setIs24h(!is24h); NothingSound.playClick(); }} 
+                                        className={`w-14 h-8 rounded-full p-[3px] cursor-pointer transition-colors duration-300 border border-nd-border-visible flex items-center ${is24h ? 'bg-nd-text-display' : 'bg-transparent'}`}
+                                    >
+                                        <div className={`w-6 h-6 rounded-full transition-transform duration-300 ease-out flex items-center justify-center ${is24h ? 'bg-nd-black translate-x-6' : 'bg-nd-text-disabled translate-x-0'}`}>
+                                            <div className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${is24h ? 'bg-nd-yellow opacity-100' : 'bg-nd-black opacity-35'}`} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Interactive clock face with preset timing buttons */}
+                    <div className="flex-grow flex flex-col items-center justify-center relative stagger-el my-4">
+                        <svg 
+                            ref={svgRef} 
+                            viewBox="-160 -160 320 320" 
+                            className="w-full h-auto max-w-[280px] max-h-[280px] aspect-square touch-none overflow-visible"
+                        >
+                            {/* Background Ring */}
+                            <circle 
+                                cx="0" 
+                                cy="0" 
+                                r={radius} 
+                                fill="none"
+                                stroke="var(--surface-raised)"
+                                strokeWidth="40"
+                            />
+                            
+                            {/* Active Arc (Accent Color) */}
+                            <circle 
+                                cx="0" 
+                                cy="0" 
+                                r={radius} 
+                                fill="none"
+                                stroke="var(--accent)"
+                                strokeWidth="40"
+                                strokeLinecap="butt"
+                                transform={`rotate(${startAngle - 90})`}
+                                strokeDasharray={`${arcLength} ${circumference}`}
+                                strokeDashoffset="0"
+                            />
+
+                            {/* Ticks Group */}
+                            <g>
+                                {Array.from({ length: 144 }).map((_, i) => {
+                                    const angle = (i / 144) * 2 * Math.PI - Math.PI / 2;
+                                    const x1 = Math.cos(angle) * 122;
+                                    const y1 = Math.sin(angle) * 122;
+                                    const x2 = Math.cos(angle) * 138;
+                                    const y2 = Math.sin(angle) * 138;
+
+                                    let degAngle = (angle * 180) / Math.PI + 90;
+                                    if (degAngle < 0) degAngle += 360;
+
+                                    let isActive = false;
+                                    if (startAngle <= endAngle) {
+                                        isActive = degAngle >= startAngle && degAngle <= endAngle;
+                                    } else {
+                                        isActive = degAngle >= startAngle || degAngle <= endAngle;
+                                    }
+
+                                    return (
+                                        <line
+                                            key={i}
+                                            x1={x1}
+                                            y1={y1}
+                                            x2={x2}
+                                            y2={y2}
+                                            className="transition-colors duration-150"
+                                            stroke={isActive ? "var(--text-display)" : "var(--border-visible)"}
+                                            strokeWidth="1.5"
+                                        />
+                                    );
+                                })}
+                            </g>
+
+                            {/* Inner Labels */}
+                            <g>
+                                <text className="font-mono text-[11px] uppercase tracking-label" fill="var(--text-disabled)" x="0" y="-85" textAnchor="middle" dominantBaseline="central">{is24h ? "00" : "12am"}</text>
+                                <text className="font-mono text-[11px] uppercase tracking-label" fill="var(--text-disabled)" x="42.5" y="-73.6" textAnchor="middle" dominantBaseline="central">{is24h ? "02" : "2"}</text>
+                                <text className="font-mono text-[11px] uppercase tracking-label" fill="var(--text-disabled)" x="73.6" y="-42.5" textAnchor="middle" dominantBaseline="central">{is24h ? "04" : "4"}</text>
+                                <text className="font-mono text-[11px] uppercase tracking-label" fill="var(--text-disabled)" x="85" y="0" textAnchor="middle" dominantBaseline="central">{is24h ? "06" : "6am"}</text>
+                                <text className="font-mono text-[11px] uppercase tracking-label" fill="var(--text-disabled)" x="73.6" y="42.5" textAnchor="middle" dominantBaseline="central">{is24h ? "08" : "8"}</text>
+                                <text className="font-mono text-[11px] uppercase tracking-label" fill="var(--text-disabled)" x="42.5" y="73.6" textAnchor="middle" dominantBaseline="central">{is24h ? "10" : "10"}</text>
+                                <text className="font-mono text-[11px] uppercase tracking-label" fill="var(--text-disabled)" x="0" y="85" textAnchor="middle" dominantBaseline="central">{is24h ? "12" : "12pm"}</text>
+                                <text className="font-mono text-[11px] uppercase tracking-label" fill="var(--text-disabled)" x="-42.5" y="73.6" textAnchor="middle" dominantBaseline="central">{is24h ? "14" : "2"}</text>
+                                <text className="font-mono text-[11px] uppercase tracking-label" fill="var(--text-disabled)" x="-73.6" y="42.5" textAnchor="middle" dominantBaseline="central">{is24h ? "16" : "4"}</text>
+                                <text className="font-mono text-[11px] uppercase tracking-label" fill="var(--text-disabled)" x="-85" y="0" textAnchor="middle" dominantBaseline="central">{is24h ? "18" : "6pm"}</text>
+                                <text className="font-mono text-[11px] uppercase tracking-label" fill="var(--text-disabled)" x="-73.6" y="-42.5" textAnchor="middle" dominantBaseline="central">{is24h ? "20" : "8"}</text>
+                                <text className="font-mono text-[11px] uppercase tracking-label" fill="var(--text-disabled)" x="-42.5" y="-73.6" textAnchor="middle" dominantBaseline="central">{is24h ? "22" : "10"}</text>
+                            </g>
+
+                            {/* Center Duration Text */}
+                            <text 
+                                className="font-grotesk text-[38px] font-bold tracking-tight" 
+                                fill="var(--text-display)" 
+                                x="0" 
+                                y="0" 
+                                textAnchor="middle" 
+                                dominantBaseline="central"
+                            >
+                                <tspan>{h}</tspan>
+                                <tspan fontSize="18" fontFamily="Space Mono" fill="var(--text-secondary)" dx="2">H</tspan>
+                                {m > 0 ? (
+                                    <>
+                                        <tspan dx="8">{m}</tspan>
+                                        <tspan fontSize="18" fontFamily="Space Mono" fill="var(--text-secondary)" dx="2">M</tspan>
+                                    </>
+                                ) : null}
+                            </text>
+
+                            {/* Start Handle */}
+                            <g 
+                                transform={`translate(${startPos.x}, ${startPos.y})`}
+                                className="cursor-grab active:cursor-grabbing"
+                                onPointerDown={(e) => handlePointerDown(e, 'start')}
+                            >
+                                <circle r="20" fill="var(--black)" stroke="var(--border-visible)" strokeWidth="1.5" />
+                                 <g style={{ color: 'var(--yellow)', fill: 'var(--yellow)' }} transform="translate(-7, -7) scale(1)">
+                                     <IconBolt />
+                                 </g>
+                            </g>
+
+                            {/* End Handle */}
+                            <g 
+                                transform={`translate(${endPos.x}, ${endPos.y})`}
+                                className="cursor-grab active:cursor-grabbing"
+                                onPointerDown={(e) => handlePointerDown(e, 'end')}
+                            >
+                                <circle r="20" fill="var(--black)" stroke="var(--border-visible)" strokeWidth="1.5" />
+                                <g fill="var(--text-display)" transform="translate(-7, -7) scale(1)">
+                                    <IconStop />
+                                </g>
+                            </g>
+                        </svg>
+
+                        {/* Preset Timing Options */}
+                        <div className="flex justify-center gap-2 mt-4 stagger-el">
+                            {[1, 2, 4, 6, 8].map(hrs => {
+                                const currentHours = h + m / 60;
+                                const isActive = Math.abs(currentHours - hrs) < 0.05;
+                                return (
+                                    <button
+                                        key={hrs}
+                                        onClick={() => applyPreset(hrs)}
+                                        className={`px-3 py-1.5 text-[11px] font-mono tracking-label border rounded-full transition-all duration-200
+                                            ${isActive 
+                                                ? 'bg-nd-text-display border-nd-text-display text-nd-black font-bold' 
+                                                : 'border-nd-border-visible text-nd-text-secondary hover:text-nd-text-primary hover:border-nd-text-primary'}`}
+                                    >
+                                        {hrs}H
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div className="pt-4 mt-auto stagger-el">
+                        <ButtonPrimary onClick={onNext}>
+                            SAVE RECORD
+                        </ButtonPrimary>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Step 5: Success Screen (Custom Visual styling matching red circle checkmark in reference) ---
+        const StepSuccess = ({ username, onReset }) => {
+            const checkRef = useRef(null);
+
+            useEffect(() => {
+                gsap.fromTo(checkRef.current, 
+                    { scale: 0.8, opacity: 0 }, 
+                    { scale: 1, opacity: 1, duration: 0.3, ease: "power4.out" } 
+                );
+                NothingSound.playSuccess();
+            }, []);
+
+            return (
+                <div className="flex flex-col items-center justify-between h-full text-center">
+                    <div className="flex-grow flex flex-col justify-center">
+                        {/* Red solid circle checkmark in Reference Image */}
+                        <div ref={checkRef} className="w-24 h-24 bg-[#D71921] rounded-full flex items-center justify-center text-white mx-auto shadow-[0_0_12px_rgba(215,25,33,0.3)]">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                        <div className="space-y-2">
+                            <h1 className="font-doto text-nd-text-display text-4xl mb-4 tracking-tight-hero font-medium uppercase mt-6">COMPLETE</h1>
+                            <p className="font-mono text-nd-text-secondary text-[13px] uppercase tracking-label max-w-[250px] mx-auto leading-relaxed">
+                                You're all set.<br />Welcome to Nothing.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div className="w-full pt-8 mt-auto">
+                        <ButtonPrimary onClick={onReset}>
+                            ENTER DASHBOARD
+                        </ButtonPrimary>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Main App Wrapper ---
+        const App = () => {
+            const [soundMuted, setSoundMuted] = useState(false);
+            const [theme, setTheme] = useState('dark');
+            const [step, setStep] = useState(1);
+            const [email, setEmail] = useState('');
+            const [otp, setOtp] = useState(['', '', '', '', '', '']);
+            const [username, setUsername] = useState('');
+            const [showDesktopWarning, setShowDesktopWarning] = useState(false);
+
+            const contentRef = useRef(null);
+
+            useEffect(() => {
+                if (window.innerWidth >= 640) {
+                    setShowDesktopWarning(true);
+                }
+            }, []);
+
+            // Bind global theme variable
+            useEffect(() => {
+                const rootEl = document.documentElement;
+                if (theme === 'light') {
+                    rootEl.classList.add('light');
+                    rootEl.classList.remove('dark');
+                } else {
+                    rootEl.classList.add('dark');
+                    rootEl.classList.remove('light');
+                }
+            }, [theme]);
+
+            // Hide preloader after app mounts and is ready
+            useEffect(() => {
+                const preloader = document.getElementById('preloader');
+                if (preloader) {
+                    const timer = setTimeout(() => {
+                        preloader.classList.add('fade-out');
+                    }, 400);
+                    return () => clearTimeout(timer);
+                }
+            }, []);
+
+            // Web Audio sound mute sync
+            useEffect(() => {
+                NothingSound.muted = soundMuted;
+            }, [soundMuted]);
+
+            const handleMuteToggle = () => {
+                setSoundMuted(p => !p);
+                if (soundMuted) {
+                    NothingSound.muted = false;
+                    NothingSound.playClick();
+                }
+            };
+
+            const handleThemeToggle = () => {
+                NothingSound.playSuccess();
+                setTheme(p => p === 'dark' ? 'light' : 'dark');
+            };
+
+            const handleBack = () => {
+                if (step === 2) transitionTo(1, 'backward');
+                else if (step === 3) transitionTo(2, 'backward');
+                else if (step === 4) transitionTo(3, 'backward');
+            };
+
+            // Snappy mechanical page transition
+            const transitionTo = (newStep, direction = 'forward') => {
+                const yOut = direction === 'forward' ? -12 : 12;
+                const yIn = direction === 'forward' ? 12 : -12;
+
+                gsap.to(contentRef.current, {
+                    opacity: 0,
+                    y: yOut,
+                    duration: 0.12,
+                    ease: "power2.in",
+                    onComplete: () => {
+                        setStep(newStep);
+                        gsap.fromTo(contentRef.current,
+                            { opacity: 0, y: yIn },
+                            { opacity: 1, y: 0, duration: 0.2, ease: "power4.out" }
+                        );
+                    }
+                });
+            };
+
+            const resetForm = () => {
+                setEmail('');
+                setOtp(['', '', '', '', '', '']);
+                setUsername('');
+                setStep(1);
+            };
+
+            return (
+                <>
+                    {showDesktopWarning && (
+                        <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/85 p-4 select-none">
+                            <div className="w-full max-w-[340px] bg-nd-surface border border-nd-border-visible rounded-[16px] p-6 text-center">
+                                <h2 className="font-doto text-2xl mb-3 text-nd-text-display uppercase tracking-tight-hero">
+                                    MOBILE ONLY
+                                </h2>
+                                <p className="font-mono text-[10px] text-nd-text-secondary uppercase leading-relaxed mb-6">
+                                    This concept is optimized for mobile screen sizes. Please resize your window or switch to a mobile device.
+                                </p>
+                                <div className="space-y-3">
+                                    <button 
+                                        onClick={() => { NothingSound.playSuccess(); setShowDesktopWarning(false); }}
+                                        className="w-full py-2.5 bg-nd-text-display text-nd-black rounded-full font-mono text-[11px] uppercase tracking-label font-bold transition-all hover:bg-nd-text-primary active:scale-[0.98]"
+                                    >
+                                        CONTINUE ANYWAY?
+                                    </button>
+                                    <button 
+                                        onClick={() => { NothingSound.playClick(); window.location.href = "https://www.saishankar.xyz/experiments/"; }}
+                                        className="w-full py-2.5 border border-nd-border-visible text-nd-text-secondary rounded-full font-mono text-[11px] uppercase tracking-label transition-all hover:border-nd-text-primary hover:text-nd-text-primary active:scale-[0.98]"
+                                    >
+                                        BACK
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    <div className="w-full sm:max-w-[400px] h-screen sm:h-[800px] bg-nd-black sm:bg-nd-surface sm:border sm:border-nd-border-visible sm:rounded-[20px] p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden transition-all duration-300">
+                        
+                        {/* Header controls */}
+                        <div className="flex justify-between items-center w-full pb-4 border-b border-nd-border-visible select-none">
+                            <div className="flex items-center min-h-[28px]">
+                                {step > 1 && step < 5 ? (
+                                    <button 
+                                        onClick={handleBack} 
+                                        className="text-nd-text-secondary hover:text-nd-text-primary transition-all duration-200 flex items-center justify-center"
+                                    >
+                                        <IconArrowLeft size={16} />
+                                    </button>
+                                ) : (
+                                    <span 
+                                        onClick={() => { NothingSound.playClick(); setTimeout(() => window.location.reload(), 150); }}
+                                        className="font-doto tracking-tight-hero text-[10px] select-none uppercase cursor-pointer hover:text-nd-text-primary transition-colors duration-200"
+                                    >
+                                        CONCEPT
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {/* Theme Button */}
+                                <button onClick={handleThemeToggle} className="p-1.5 border border-nd-border-visible rounded hover:border-nd-text-primary transition-all text-nd-text-secondary hover:text-nd-text-primary">
+                                    {theme === 'dark' ? <IconSun /> : <IconMoon />}
+                                </button>
+                                {/* Mute Button */}
+                                <button onClick={handleMuteToggle} className="p-1.5 border border-nd-border-visible rounded hover:border-nd-text-primary transition-all text-nd-text-secondary hover:text-nd-text-primary">
+                                    {soundMuted ? <IconSpeakerOff /> : <IconSpeakerOn />}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Content panel */}
+                        <div ref={contentRef} className="flex-grow flex flex-col justify-between my-6 overflow-hidden">
+                            {step === 1 && <StepEmail email={email} setEmail={setEmail} onNext={() => transitionTo(2, 'forward')} />}
+                            {step === 2 && <StepOTP otp={otp} setOtp={setOtp} onBack={() => transitionTo(1, 'backward')} onNext={() => transitionTo(3, 'forward')} />}
+                            {step === 3 && <StepProfile username={username} setUsername={setUsername} theme={theme} setTheme={setTheme} onNext={() => transitionTo(4, 'forward')} />}
+                            {step === 4 && <StepTimeSync theme={theme} onBack={() => transitionTo(3, 'backward')} onNext={() => transitionTo(5, 'forward')} />}
+                            {step === 5 && <StepSuccess username={username} onReset={resetForm} />}
+                        </div>
+
+                        {/* Bottom footer metadata */}
+                        <div className="flex justify-between items-center pt-4 border-t border-nd-border-visible select-none">
+                            <span className="font-mono text-[9px] text-nd-text-disabled uppercase">NOTHING CORP. © 2026</span>
+                            <a href="https://x.com/saishankar404" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-nd-text-disabled hover:text-nd-text-primary uppercase tracking-widest transition-colors duration-200">DESIGNED BY SAI</a>
+                        </div>
+                    </div>
+                </>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
